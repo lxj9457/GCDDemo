@@ -1,10 +1,10 @@
 ## 基于任务管理的队列池API设计
 
-###背景
+### 背景
 
 在99u启动的过程中，线程数峰值较大，为了解决线程数峰值问题，可采用控制线程数、队列数、并发任务数来降低线程峰值问题。本文是通过探究第三方库 `YYDispatchQueue`、`QSDispatchQueue`以及 iOS 原生`QSDispatchQueue`并产生一个相对合理的解决方案。
 
-###现有队列池／线程池概况
+### 现有队列池／线程池概况
 
 ####YYDispatchQueue
 
@@ -23,7 +23,7 @@ typedef struct {
 
 开发者只能根据优先级从从队列池取到队列。队列池每次收到获取队列请求后，获取该优先级的队列池上下文，立即将当前队列池任务数自增1后取余队列总数（即从该优先级上下文中获取当前队列的下一条队列，不考虑队列的状态）。
 
-#####实验设计 
+##### 实验设计 
 
 在有8个活动核心数的设备上将1000个异步任务（每个异步任务sleep 0.2～4.2s）加入由YYDispatchQueue管理的默认优先级的serial queue中。
 
@@ -102,7 +102,7 @@ YYDispatchQueue在加入异步任务的时候就预先分配好了对应的queue
 
 #### QSDispatchQueue
 
-#####流程概要
+##### 流程概要
 
 队列池创建一条公共串行队列，用于统一分配所有任务，队列池创建一个公共信号量，用于控制任务并发数。
 
@@ -122,7 +122,7 @@ dispatch_async(_serialQueue,^{//将异步任务加入公共队列池
 })
 ```
 
-#####实验设计
+##### 实验设计
 
 新建一个并发队列workConcurrentQueue，将其与1000个一步任务加入到QSDispatchQueue中，并设置最大并发数为8。
 
@@ -194,7 +194,7 @@ for (NSInteger i = 0; i < _count; i++) {
 
 
 
-###QSDispatchQueue
+### QSDispatchQueue
 
 ##### 实验设计
 
@@ -261,11 +261,11 @@ for(int i = 0; i < 1000; i++){
 
 
 
-###基于任务管理的队列池（自研）
+### 基于任务管理的队列池（自研）
 
-####dispatchpool
+#### dispatchpool
 
-#####愿景：
+##### 愿景：
 
 1、执行顺序稳定
 
@@ -295,7 +295,7 @@ dispatch_queue_t dispatch_get_global_queue(long identifier, unsigned long flags)
 
 
 
-#####设计要求
+##### 设计要求
 
 1、为使得API与GCD一致，线程池需提供获取线程的方法。但为使得便于线程管理，应不得让开发者改变获取到的线程的用途。
 
@@ -309,7 +309,7 @@ dispatch_queue_t dispatch_get_global_queue(long identifier, unsigned long flags)
 
 
 
-#####设计概要
+##### 设计概要
 
 1、使用信号量限制并发任务数来控制线程峰值：由于GCD是通过队列对线程数的需求来管理线程，所以可以通过控制队列数、队列中的任务总并发数的方式来间接控制线程数。所以在此设计思路下，应该通过信号量等方式控制队列中的任务的总并发数来实现线程数相对稳定的需求。所以需要
 
@@ -323,7 +323,7 @@ dispatch_queue_t dispatch_get_global_queue(long identifier, unsigned long flags)
 
 
 
-#####API
+##### API
 
 ```obj-c
 /*
