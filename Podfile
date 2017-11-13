@@ -4,7 +4,7 @@ project 'GCDDemo.xcodeproj'
 
 def common_pods
     pod 'Masonry', '~>0.6.2'
-    pod 'YYDispatchQueuePool',:path=>'../YYDispatchQueuePool'
+    pod 'YYDispatchQueuePool'
 end
 
 target 'GCDDemo' do

@@ -46,7 +46,7 @@ YYDispatchQueue在加入异步任务的时候就预先分配好了对应的queue
 
 1、**后加入队列池的任务**在**先加入队列池的任务**之前执行，即**执行顺序不稳定**的情况。
 
-2、有的串行队列处于空闲状态，而有的串行队列处于长时间忙碌的状态
+![YYDispatchPool](image/YYDispatchPool.png)2、有的串行队列处于空闲状态，而有的串行队列处于长时间忙碌的状态
 
 根据log记录可知：
 
@@ -77,6 +77,10 @@ YYDispatchQueue在加入异步任务的时候就预先分配好了对应的queue
 ```
 
 为解决该问题。则应该把所有开发者需要用队列执行的异步任务block加入到一个公共队列或者链表中进行管理。然后每个serial queue从中依次取出任务进行执行。
+
+时许图如下：
+
+
 
 ##### 特征总结：
 
@@ -169,6 +173,10 @@ for (NSInteger i = 0; i < _count; i++) {
 09:44:35.96 thread-info:<NSThread: 0x600000470b80>{number = 5, name = (null)}开始执行任务14
 09:44:36.95 thread-info:<NSThread: 0x6000004712c0>{number = 8, name = (null)}结束执行任务5
 ```
+
+时序图如下：
+
+![QSDispatchQueue](image/QSDispatchQueue.png)
 
 ##### 特征：
 
