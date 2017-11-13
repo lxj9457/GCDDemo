@@ -2,7 +2,7 @@
 
 ### 背景
 
-在99u启动的过程中，线程数峰值较大，为了解决线程数峰值问题，可采用控制线程数、队列数、并发任务数来降低线程峰值问题。本文是通过探究第三方库 `YYDispatchQueue`、`QSDispatchQueue`以及 iOS 原生`QSDispatchQueue`并产生一个相对合理的解决方案。
+在99u启动的过程中，线程数峰值较大，为了解决线程数峰值问题，可采用控制线程数、队列数、并发任务数来降低线程峰值问题。本文是通过探究第三方库 `YYDispatchQueue`、`QSDispatchQueue`以及 iOS 原生`NSOperationQueue`并产生一个相对合理的解决方案。
 
 ### 现有队列池／线程池概况
 
