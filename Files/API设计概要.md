@@ -6,7 +6,7 @@
 
 ### 现有队列池／线程池概况
 
-####YYDispatchQueue
+#### YYDispatchQueue
 
 ##### 流程概要
 
@@ -258,7 +258,6 @@ for(int i = 0; i < 1000; i++){
 优点：NSOprationQueue解决了YYDispatchQueue存在的任务执行顺序不稳定问题。
 
 缺点：基于OC的解决方案，不够轻便灵巧。
-
 
 
 ### 基于任务管理的队列池（自研）
