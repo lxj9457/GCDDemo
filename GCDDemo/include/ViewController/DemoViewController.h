@@ -1,5 +1,5 @@
 //
-//  ViewController.h
+//  DemoViewController.h
 //  GCDDemo
 //
 //  Created by 林训键 on 2017/10/29.
@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface MainViewController : UIViewController
+@interface DemoViewController : UIViewController
 
 
 @end

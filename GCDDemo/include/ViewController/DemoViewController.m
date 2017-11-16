@@ -1,18 +1,18 @@
 //
-//  ViewController.m
+//  DemoViewController.m
 //  GCDDemo
 //
 //  Created by 林训键 on 2017/10/29.
 //  Copyright © 2017年 林训键. All rights reserved.
 //
 
-#import "MainViewController.h"
+#import "DemoViewController.h"
 #import "GCDSectionModel.h"
 #import "QSDispatchQueue.h"
 #import "dispatchpool.h"
 #import <YYDispatchQueuePool/YYDispatchQueuePool.h>
 
-@interface MainViewController () <UITableViewDelegate, UITableViewDataSource>
+@interface DemoViewController () <UITableViewDelegate, UITableViewDataSource>
 
 @property (nonatomic, strong) UITableView *tableview;
 @property (nonatomic, strong) NSArray<GCDSectionModel *> *sections;
@@ -21,7 +21,7 @@
 
 @end
 
-@implementation MainViewController
+@implementation DemoViewController
 
 - (void)viewDidLoad {
     [super viewDidLoad];

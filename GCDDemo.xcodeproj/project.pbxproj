@@ -8,17 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		0AAD98B7F90B835278525045 /* libPods-GCDDemoTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E4E201A1ACD344F7A9A678C5 /* libPods-GCDDemoTests.a */; };
-		A01476741FAC09A500C4F6BF /* QSDispatchQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = A01476731FAC09A500C4F6BF /* QSDispatchQueue.m */; };
-		A01499841FA5EAAB0029436B /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A01499831FA5EAAB0029436B /* AppDelegate.m */; };
-		A01499871FA5EAAB0029436B /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A01499861FA5EAAB0029436B /* MainViewController.m */; };
-		A014998A1FA5EAAB0029436B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A01499881FA5EAAB0029436B /* Main.storyboard */; };
-		A014998C1FA5EAAB0029436B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A014998B1FA5EAAB0029436B /* Assets.xcassets */; };
-		A014998F1FA5EAAB0029436B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A014998D1FA5EAAB0029436B /* LaunchScreen.storyboard */; };
-		A01499921FA5EAAB0029436B /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A01499911FA5EAAB0029436B /* main.m */; };
 		A014999C1FA5EAAB0029436B /* GCDDemoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A014999B1FA5EAAB0029436B /* GCDDemoTests.m */; };
 		A01499A71FA5EAAB0029436B /* GCDDemoUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = A01499A61FA5EAAB0029436B /* GCDDemoUITests.m */; };
-		A032E1111FA60C5F007B3801 /* GCDSectionModel.m in Sources */ = {isa = PBXBuildFile; fileRef = A032E1101FA60C5F007B3801 /* GCDSectionModel.m */; };
-		A032E1171FAA29EC007B3801 /* dispatchpool.m in Sources */ = {isa = PBXBuildFile; fileRef = A032E1161FAA29EC007B3801 /* dispatchpool.m */; };
 		BA23650A5AE19EF996299456 /* libPods-GCDDemo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A01A11E627E6F5E16644DDBB /* libPods-GCDDemo.a */; };
 /* End PBXBuildFile section */
 
@@ -43,18 +34,7 @@
 		3DA43B076B74B50C5263015D /* Pods-GCDDemo.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GCDDemo.release.xcconfig"; path = "Pods/Target Support Files/Pods-GCDDemo/Pods-GCDDemo.release.xcconfig"; sourceTree = "<group>"; };
 		6252C462FD42FA3C9A814E1B /* Pods-GCDDemoTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GCDDemoTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-GCDDemoTests/Pods-GCDDemoTests.debug.xcconfig"; sourceTree = "<group>"; };
 		7293BCAB495DBA25F2358BB0 /* Pods-GCDDemoTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GCDDemoTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-GCDDemoTests/Pods-GCDDemoTests.release.xcconfig"; sourceTree = "<group>"; };
-		A01476721FAC09A500C4F6BF /* QSDispatchQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QSDispatchQueue.h; sourceTree = "<group>"; };
-		A01476731FAC09A500C4F6BF /* QSDispatchQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QSDispatchQueue.m; sourceTree = "<group>"; };
 		A014997F1FA5EAAB0029436B /* GCDDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GCDDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		A01499821FA5EAAB0029436B /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
-		A01499831FA5EAAB0029436B /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
-		A01499851FA5EAAB0029436B /* MainViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MainViewController.h; sourceTree = "<group>"; };
-		A01499861FA5EAAB0029436B /* MainViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MainViewController.m; sourceTree = "<group>"; };
-		A01499891FA5EAAB0029436B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		A014998B1FA5EAAB0029436B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		A014998E1FA5EAAB0029436B /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		A01499901FA5EAAB0029436B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		A01499911FA5EAAB0029436B /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		A01499971FA5EAAB0029436B /* GCDDemoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = GCDDemoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		A014999B1FA5EAAB0029436B /* GCDDemoTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GCDDemoTests.m; sourceTree = "<group>"; };
 		A014999D1FA5EAAB0029436B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -62,10 +42,23 @@
 		A01499A61FA5EAAB0029436B /* GCDDemoUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GCDDemoUITests.m; sourceTree = "<group>"; };
 		A01499A81FA5EAAB0029436B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A01A11E627E6F5E16644DDBB /* libPods-GCDDemo.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-GCDDemo.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		A032E10F1FA60C5F007B3801 /* GCDSectionModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GCDSectionModel.h; sourceTree = "<group>"; };
-		A032E1101FA60C5F007B3801 /* GCDSectionModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GCDSectionModel.m; sourceTree = "<group>"; };
-		A032E1151FAA29EC007B3801 /* dispatchpool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dispatchpool.h; sourceTree = "<group>"; };
-		A032E1161FAA29EC007B3801 /* dispatchpool.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = dispatchpool.m; sourceTree = "<group>"; };
+		A04BCC401FBD92EC00FD336C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A04BCC421FBD92EC00FD336C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		A04BCC441FBD92EC00FD336C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		A04BCC451FBD92EC00FD336C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A04BCC471FBD92EC00FD336C /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		A04BCC481FBD92EC00FD336C /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		A04BCC491FBD92EC00FD336C /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		A04BCC4C1FBD92EC00FD336C /* dispatchpool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dispatchpool.h; sourceTree = "<group>"; };
+		A04BCC4D1FBD92EC00FD336C /* dispatchpool.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = dispatchpool.m; sourceTree = "<group>"; };
+		A04BCC4F1FBD92EC00FD336C /* GCDSectionModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GCDSectionModel.h; sourceTree = "<group>"; };
+		A04BCC501FBD92EC00FD336C /* GCDSectionModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GCDSectionModel.m; sourceTree = "<group>"; };
+		A04BCC521FBD92EC00FD336C /* QSDispatchQueue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QSDispatchQueue.h; sourceTree = "<group>"; };
+		A04BCC531FBD92EC00FD336C /* QSDispatchQueue.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QSDispatchQueue.m; sourceTree = "<group>"; };
+		A04BCC551FBD92EC00FD336C /* DemoViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DemoViewController.h; sourceTree = "<group>"; };
+		A04BCC561FBD92EC00FD336C /* DemoViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DemoViewController.m; sourceTree = "<group>"; };
+		A04BCC571FBD92EC00FD336C /* QueueViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QueueViewController.h; sourceTree = "<group>"; };
+		A04BCC581FBD92EC00FD336C /* QueueViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QueueViewController.m; sourceTree = "<group>"; };
 		C5D6511022BABD37048C2623 /* Pods-GCDDemo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GCDDemo.debug.xcconfig"; path = "Pods/Target Support Files/Pods-GCDDemo/Pods-GCDDemo.debug.xcconfig"; sourceTree = "<group>"; };
 		E4E201A1ACD344F7A9A678C5 /* libPods-GCDDemoTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-GCDDemoTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -131,21 +124,9 @@
 		A01499811FA5EAAB0029436B /* GCDDemo */ = {
 			isa = PBXGroup;
 			children = (
-				A01499821FA5EAAB0029436B /* AppDelegate.h */,
-				A01499831FA5EAAB0029436B /* AppDelegate.m */,
-				A01499851FA5EAAB0029436B /* MainViewController.h */,
-				A01499861FA5EAAB0029436B /* MainViewController.m */,
-				A01499881FA5EAAB0029436B /* Main.storyboard */,
-				A014998D1FA5EAAB0029436B /* LaunchScreen.storyboard */,
-				A014998B1FA5EAAB0029436B /* Assets.xcassets */,
-				A01499901FA5EAAB0029436B /* Info.plist */,
-				A01499911FA5EAAB0029436B /* main.m */,
-				A032E10F1FA60C5F007B3801 /* GCDSectionModel.h */,
-				A032E1101FA60C5F007B3801 /* GCDSectionModel.m */,
-				A01476721FAC09A500C4F6BF /* QSDispatchQueue.h */,
-				A01476731FAC09A500C4F6BF /* QSDispatchQueue.m */,
-				A032E1151FAA29EC007B3801 /* dispatchpool.h */,
-				A032E1161FAA29EC007B3801 /* dispatchpool.m */,
+				A04BCC4A1FBD92EC00FD336C /* include */,
+				A04BCC461FBD92EC00FD336C /* src */,
+				A04BCC3F1FBD92EC00FD336C /* Support Files */,
 			);
 			path = GCDDemo;
 			sourceTree = "<group>";
@@ -166,6 +147,76 @@
 				A01499A81FA5EAAB0029436B /* Info.plist */,
 			);
 			path = GCDDemoUITests;
+			sourceTree = "<group>";
+		};
+		A04BCC3F1FBD92EC00FD336C /* Support Files */ = {
+			isa = PBXGroup;
+			children = (
+				A04BCC401FBD92EC00FD336C /* Assets.xcassets */,
+				A04BCC411FBD92EC00FD336C /* LaunchScreen.storyboard */,
+				A04BCC431FBD92EC00FD336C /* Main.storyboard */,
+				A04BCC451FBD92EC00FD336C /* Info.plist */,
+			);
+			path = "Support Files";
+			sourceTree = "<group>";
+		};
+		A04BCC461FBD92EC00FD336C /* src */ = {
+			isa = PBXGroup;
+			children = (
+				A04BCC471FBD92EC00FD336C /* AppDelegate.h */,
+				A04BCC481FBD92EC00FD336C /* AppDelegate.m */,
+				A04BCC491FBD92EC00FD336C /* main.m */,
+			);
+			path = src;
+			sourceTree = "<group>";
+		};
+		A04BCC4A1FBD92EC00FD336C /* include */ = {
+			isa = PBXGroup;
+			children = (
+				A04BCC4B1FBD92EC00FD336C /* dispatchpool */,
+				A04BCC4E1FBD92EC00FD336C /* Model */,
+				A04BCC511FBD92EC00FD336C /* OtherPool */,
+				A04BCC541FBD92EC00FD336C /* ViewController */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		A04BCC4B1FBD92EC00FD336C /* dispatchpool */ = {
+			isa = PBXGroup;
+			children = (
+				A04BCC4C1FBD92EC00FD336C /* dispatchpool.h */,
+				A04BCC4D1FBD92EC00FD336C /* dispatchpool.m */,
+			);
+			path = dispatchpool;
+			sourceTree = "<group>";
+		};
+		A04BCC4E1FBD92EC00FD336C /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				A04BCC4F1FBD92EC00FD336C /* GCDSectionModel.h */,
+				A04BCC501FBD92EC00FD336C /* GCDSectionModel.m */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		A04BCC511FBD92EC00FD336C /* OtherPool */ = {
+			isa = PBXGroup;
+			children = (
+				A04BCC521FBD92EC00FD336C /* QSDispatchQueue.h */,
+				A04BCC531FBD92EC00FD336C /* QSDispatchQueue.m */,
+			);
+			path = OtherPool;
+			sourceTree = "<group>";
+		};
+		A04BCC541FBD92EC00FD336C /* ViewController */ = {
+			isa = PBXGroup;
+			children = (
+				A04BCC551FBD92EC00FD336C /* DemoViewController.h */,
+				A04BCC561FBD92EC00FD336C /* DemoViewController.m */,
+				A04BCC571FBD92EC00FD336C /* QueueViewController.h */,
+				A04BCC581FBD92EC00FD336C /* QueueViewController.m */,
+			);
+			path = ViewController;
 			sourceTree = "<group>";
 		};
 		CB5E4C35EDFD9E4057D8782E /* Pods */ = {
@@ -291,9 +342,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A014998F1FA5EAAB0029436B /* LaunchScreen.storyboard in Resources */,
-				A014998C1FA5EAAB0029436B /* Assets.xcassets in Resources */,
-				A014998A1FA5EAAB0029436B /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -411,12 +459,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A032E1111FA60C5F007B3801 /* GCDSectionModel.m in Sources */,
-				A01499871FA5EAAB0029436B /* MainViewController.m in Sources */,
-				A032E1171FAA29EC007B3801 /* dispatchpool.m in Sources */,
-				A01476741FAC09A500C4F6BF /* QSDispatchQueue.m in Sources */,
-				A01499921FA5EAAB0029436B /* main.m in Sources */,
-				A01499841FA5EAAB0029436B /* AppDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -452,20 +494,20 @@
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
-		A01499881FA5EAAB0029436B /* Main.storyboard */ = {
+		A04BCC411FBD92EC00FD336C /* LaunchScreen.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
-				A01499891FA5EAAB0029436B /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
-		A014998D1FA5EAAB0029436B /* LaunchScreen.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				A014998E1FA5EAAB0029436B /* Base */,
+				A04BCC421FBD92EC00FD336C /* Base */,
 			);
 			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		A04BCC431FBD92EC00FD336C /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				A04BCC441FBD92EC00FD336C /* Base */,
+			);
+			name = Main.storyboard;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
@@ -582,7 +624,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = E5868MRLR6;
-				INFOPLIST_FILE = GCDDemo/Info.plist;
+				INFOPLIST_FILE = "GCDDemo/Support Files/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = cn.coderlin.GCDDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -597,7 +639,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = E5868MRLR6;
-				INFOPLIST_FILE = GCDDemo/Info.plist;
+				INFOPLIST_FILE = "GCDDemo/Support Files/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = cn.coderlin.GCDDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
