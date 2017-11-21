@@ -8,29 +8,6 @@
 
 #import "dispatchpool.h"
 
-
-static inline dispatch_queue_priority_t NSQualityOfServiceToDispatchPriority(NSQualityOfService qos) {
-    switch (qos) {
-        case NSQualityOfServiceUserInteractive: return DISPATCH_QUEUE_PRIORITY_HIGH;
-        case NSQualityOfServiceUserInitiated: return DISPATCH_QUEUE_PRIORITY_HIGH;
-        case NSQualityOfServiceUtility: return DISPATCH_QUEUE_PRIORITY_LOW;
-        case NSQualityOfServiceBackground: return DISPATCH_QUEUE_PRIORITY_BACKGROUND;
-        case NSQualityOfServiceDefault: return DISPATCH_QUEUE_PRIORITY_DEFAULT;
-        default: return DISPATCH_QUEUE_PRIORITY_DEFAULT;
-    }
-}
-
-static inline qos_class_t NSQualityOfServiceToQOSClass(NSQualityOfService qos) {
-    switch (qos) {
-        case NSQualityOfServiceUserInteractive: return QOS_CLASS_USER_INTERACTIVE;
-        case NSQualityOfServiceUserInitiated: return QOS_CLASS_USER_INITIATED;
-        case NSQualityOfServiceUtility: return QOS_CLASS_UTILITY;
-        case NSQualityOfServiceBackground: return QOS_CLASS_BACKGROUND;
-        case NSQualityOfServiceDefault: return QOS_CLASS_DEFAULT;
-        default: return QOS_CLASS_UNSPECIFIED;
-    }
-}
-
 static dispatch_queue_t lineQueues[4] = {0};
 static dispatch_semaphore_t semaphores[4] = {0};
 
@@ -45,7 +22,7 @@ dispatch_queue_t dispatch_pool_serial_queue_create(const char *_Nullable label,l
     return queue;
 }
 
-void initDispatchPool(){
+void dispatch_pool_init(){
     lineQueues[0] = dispatch_pool_serial_queue_create("sdp.nd.serial_common_high", DISPATCH_QUEUE_PRIORITY_HIGH);
     lineQueues[1] = dispatch_pool_serial_queue_create("sdp.nd.serial_common_default", DISPATCH_QUEUE_PRIORITY_DEFAULT);
     lineQueues[2] = dispatch_pool_serial_queue_create("sdp.nd.serial_common_low", DISPATCH_QUEUE_PRIORITY_LOW);
@@ -115,13 +92,13 @@ BOOL is_qos_class_user_interactive(dispatch_qos_class_t qos){
     return false;
 }
 
-void dispatch_pool_queue_sync(dispatch_queue_t queue,dispatch_block_t block){
+void dispatch_pool_sync(dispatch_queue_t queue,dispatch_block_t block){
     if (!block) {
         return;
     }
     dispatch_qos_class_t qos = dispatch_queue_get_qos_class(queue, NULL);
     if(is_qos_class_user_interactive(qos)){
-        dispatch_sync(dispatch_get_main_queue(), block);
+        dispatch_sync(queue, block);
     }else{
         dispatch_queue_t lineQueue = dispatch_pool_get_line_queue_with_qos(qos);
         dispatch_semaphore_t semaphorse = dispatch_pool_get_line_queue_semaphore_with_qos(qos);
@@ -137,13 +114,13 @@ void dispatch_pool_queue_sync(dispatch_queue_t queue,dispatch_block_t block){
     }
 }
 
-void dispatch_pool_queue_async(dispatch_queue_t queue,dispatch_block_t block){
+void dispatch_pool_async(dispatch_queue_t queue,dispatch_block_t block){
     if (!block) {
         return;
     }
     dispatch_qos_class_t qos = dispatch_queue_get_qos_class(queue, NULL);
     if(is_qos_class_user_interactive(qos)){
-        dispatch_async(dispatch_get_main_queue(), block);
+        dispatch_async(queue, block);
     }else{
         dispatch_queue_t lineQueue = dispatch_pool_get_line_queue_with_qos(qos);
         dispatch_semaphore_t semaphorse = dispatch_pool_get_line_queue_semaphore_with_qos(qos);
@@ -158,3 +135,110 @@ void dispatch_pool_queue_async(dispatch_queue_t queue,dispatch_block_t block){
         });
     }
 }
+
+void dispatch_pool_async_f(dispatch_queue_t queue, void *_Nullable context, dispatch_function_t work){
+//    if (!block) {
+//        return;
+//    }
+    dispatch_qos_class_t qos = dispatch_queue_get_qos_class(queue, NULL);
+    if(is_qos_class_user_interactive(qos)){
+        dispatch_async_f(queue, context, work);
+    }else{
+        dispatch_queue_t lineQueue = dispatch_pool_get_line_queue_with_qos(qos);
+        dispatch_semaphore_t semaphorse = dispatch_pool_get_line_queue_semaphore_with_qos(qos);
+        dispatch_async(lineQueue,^{
+            dispatch_semaphore_wait(semaphorse, DISPATCH_TIME_FOREVER);
+            dispatch_async_f(queue,NULL,dispatch_pool_sync_f_with_semaphore(semaphorse,context,work));
+        });
+    }
+}
+
+dispatch_function_t dispatch_pool_sync_f_with_semaphore(dispatch_semaphore_t semaphorse, void *_Nullable context, dispatch_function_t work){
+    work(context);
+    dispatch_semaphore_signal(semaphorse);
+}
+
+dispatch_group_t dispatch_pool_group_create(){
+    return dispatch_group_create();
+}
+
+/*
+ 在pool中加入异步group任务，用于替代GCD的 dispatch_group_async 接口,将任务加入排队队列管理并分发到queue中执行，同时便于埋点统计和后续优化。
+ @param group 组
+ @param queue 队列
+ @param block 任务block
+ */
+void dispatch_pool_group_async(dispatch_group_t group,dispatch_queue_t queue,dispatch_block_t block){
+    if (!block) {
+        return;
+    }
+    dispatch_qos_class_t qos = dispatch_queue_get_qos_class(queue, NULL);
+    if(is_qos_class_user_interactive(qos)){
+        dispatch_group_async(group,queue, block);
+    }else{
+        dispatch_queue_t lineQueue = dispatch_pool_get_line_queue_with_qos(qos);
+        dispatch_semaphore_t semaphorse = dispatch_pool_get_line_queue_semaphore_with_qos(qos);
+        dispatch_async(lineQueue,^{
+            dispatch_semaphore_wait(semaphorse, DISPATCH_TIME_FOREVER);
+            dispatch_group_async(group, queue,^{
+                if (block) {
+                    block();
+                }
+                dispatch_semaphore_signal(semaphorse);
+            });
+        });
+    }
+}
+
+/*
+ 在pool中加入同步group任务，用于替代GCD的 dispatch_group_sync 接口,将任务加入排队队列管理并分发到queue中执行，同时便于埋点统计和后续优化
+ @param group 组
+ @param queue 队列
+ @param block 任务block
+ */
+void dispatch_pool_group_sync(dispatch_group_t group,dispatch_queue_t queue,dispatch_block_t block){
+    if (!block) {
+        return;
+    }
+    dispatch_qos_class_t qos = dispatch_queue_get_qos_class(queue, NULL);
+    if(is_qos_class_user_interactive(qos)){
+        dispatch_group_async(group, queue, block);
+    }else{
+        dispatch_queue_t lineQueue = dispatch_pool_get_line_queue_with_qos(qos);
+        dispatch_semaphore_t semaphorse = dispatch_pool_get_line_queue_semaphore_with_qos(qos);
+        dispatch_sync(lineQueue,^{
+            dispatch_semaphore_wait(semaphorse, DISPATCH_TIME_FOREVER);
+            dispatch_group_async(group, queue,^{
+                if (block) {
+                    block();
+                }
+                dispatch_semaphore_signal(semaphorse);
+            });
+        });
+    }
+}
+
+/*
+ 增加一个group任务信号量，用于替代GCD的 dispatch_group_enter 接口，便于埋点统计和后续优化
+ @param group 组
+ */
+void dispatch_pool_group_enter(dispatch_group_t group){
+    dispatch_group_enter(group);
+}
+
+/*
+ 减少一个group任务信号量，用于替代GCD的 dispatch_group_leave 接口，便于埋点统计和后续优化
+ @param group 组
+ */
+void dispatch_pool_group_leave(dispatch_group_t group){
+    dispatch_group_leave(group);
+}
+
+///*
+// 在group任务完成后回调，用于替代GCD的 dispatch_group_notify 接口，便于埋点统计和后续优化
+// */
+//void dispatch_pool_group_notify(dispatch_group_t group, dispatch_queue_t queue, dispatch_block_t block){
+//
+//}
+
+

@@ -8,8 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-
-void initDispatchPool(void);
+void dispatch_pool_init(void);
 
 /*
  创建队列，用于创建真串行队列，或者获取一个全局并发队列，用于替代GCD的dispatch_queue_create接口,便于埋点统计和后续优化。
@@ -30,14 +29,14 @@ dispatch_queue_t dispatch_pool_get_global_queue(long identifier, unsigned long f
  @param queue 队列
  @param block 任务block
  */
-void dispatch_pool_queue_async(dispatch_queue_t queue,dispatch_block_t block);
+void dispatch_pool_async(dispatch_queue_t queue,dispatch_block_t block);
 
 /*
  在pool中加入同步任务，用于替代GCD的 dispatch_queue_sync 接口,将任务加入排队队列管理并分发到queue中执行，同时便于埋点统计和后续优化。
  @param queue 队列
  @param block 任务block
  */
-void dispatch_pool_queue_sync(dispatch_queue_t queue,dispatch_block_t block);
+void dispatch_pool_sync(dispatch_queue_t queue,dispatch_block_t block);
 
 /*
  创建一个group，用于替代GCD的 dispatch_group_create 接口，便于埋点统计和后续优化。

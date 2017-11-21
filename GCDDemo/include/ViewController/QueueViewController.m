@@ -14,8 +14,7 @@
 
 @property (nonatomic, strong) UITableView *tableview;
 @property (nonatomic, strong) NSArray<GCDSectionModel *> *sections;
-@property (nonatomic, assign) int concurrentNum;
-@property (nonatomic, assign) NSInteger count;
+@property (nonatomic, assign) int currentTaskId;
 
 @end
 
@@ -28,9 +27,9 @@
 }
 
 - (void)setupData{
-    _count = 1000;
+    _currentTaskId = 0;
     GCDSectionModel *sectionmodel = [[GCDSectionModel alloc]init];
-    sectionmodel.sectionTitle = @"GCD";
+    sectionmodel.sectionTitle = @"优先级测试";
     sectionmodel.titles = @[@"获取主线程优先级",
                             @"获取高优先级全局队列优先级",
                             @"获取中优先级全局队列优先级",
@@ -38,12 +37,25 @@
                             @"获取后台全局队列优先级",
                             @"获取自建队列优先级",
                             @"获取其他队列优先级"
-//                            [NSString stringWithFormat:@"创建%ld个并行线程,并增加10个随机任务",_count],
-//                            [NSString stringWithFormat:@"创建%ld个串型线程,并增加10个随机任务",_count],
-//                            [NSString stringWithFormat:@"创建%ld个默认线程",_count]
                             ];
-    _sections = @[sectionmodel];
-    initDispatchPool();
+    GCDSectionModel *sectionmodel1 = [[GCDSectionModel alloc]init];
+    sectionmodel1.sectionTitle = @"dispatch_pool异步功能测试";
+    sectionmodel1.titles = @[@"增加一个主线程异步操作",
+                            @"增加一个全局高优先级异步操作",
+                            @"增加一个全局中优先级异步操作",
+                            @"增加一个全局低优先级异步操作",
+                            @"增加一个全局后台优先级异步操作",
+                            ];
+    GCDSectionModel *sectionmodel2 = [[GCDSectionModel alloc]init];
+    sectionmodel2.sectionTitle = @"dispatch_pool同步功能测试";
+    sectionmodel2.titles = @[@"增加一个主线程同步操作",
+                            @"增加一个全局高优先级同步操作",
+                            @"增加一个全局中优先级同步操作",
+                            @"增加一个全局低优先级同步操作",
+                            @"增加一个全局后台优先级同步操作"
+                            ];
+    _sections = @[sectionmodel,sectionmodel1,sectionmodel2];
+    dispatch_pool_init();
 }
 
 - (void)setupUI{
@@ -86,26 +98,39 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     dispatch_qos_class_t qos;
-    if(indexPath.section == 0 && indexPath.row == 0){
-        dispatch_queue_t queue = dispatch_get_main_queue();
+    dispatch_queue_t queue;
+    if(indexPath.section == 0){
+        queue = [self ququeByTag:indexPath.row];
         qos = dispatch_queue_get_qos_class(queue, NULL);
-    }else if(indexPath.section == 0 && indexPath.row == 1){
-        dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0);
-        qos = dispatch_queue_get_qos_class(queue, NULL);
-    }else if(indexPath.section == 0 && indexPath.row == 2){
-        dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-        qos = dispatch_queue_get_qos_class(queue, NULL);
-    }else if(indexPath.section == 0 && indexPath.row == 3){
-        dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0);
-        qos = dispatch_queue_get_qos_class(queue, NULL);
-    }else if(indexPath.section == 0 && indexPath.row == 4){
-        dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0);
-        qos = dispatch_queue_get_qos_class(queue, NULL);
-    }else if(indexPath.section == 0 && indexPath.row == 5){
-        dispatch_queue_t queue = dispatch_queue_create("serial", DISPATCH_QUEUE_SERIAL);
-        qos = dispatch_queue_get_qos_class(queue, NULL);
+        [self log:qos];
+    }else if(indexPath.section ==1){
+        queue = [self ququeByTag:indexPath.row];
+        NSLog(@"%d:%@开始队列池异步任务",_currentTaskId,dispatch_get_current_queue);
+        dispatch_pool_queue_async(queue, ^{
+            NSLog(@"%d:%@开始执行异步任务",_currentTaskId,[NSThread currentThread]);
+            sleep(random()%4+0.2);
+            NSLog(@"%d:thread-info:%@结束执行任务",_currentTaskId,[NSThread currentThread]);
+        });
     }
-    [self log:qos];
+}
+
+
+- (dispatch_queue_t)ququeByTag:(NSInteger)tag{
+    dispatch_queue_t queue;
+    if(tag == 0){
+        queue = dispatch_get_main_queue();
+    }else if(tag == 1){
+        queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0);
+    }else if(tag == 2){
+        queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+    }else if(tag == 3){
+        queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0);
+    }else if(tag == 4){
+        queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0);
+    }else if(tag == 5){
+        queue = dispatch_queue_create("serial", DISPATCH_QUEUE_SERIAL);
+    }
+    return queue;
 }
 
 - (void)log:(dispatch_qos_class_t)qos{
@@ -121,6 +146,8 @@
         NSLog(@"QOS_CLASS_BACKGROUND");
     }else if(qos == QOS_CLASS_UNSPECIFIED){
         NSLog(@"QOS_CLASS_UNSPECIFIED");
+    }else{
+        NSLog(@"other");
     }
 }
 

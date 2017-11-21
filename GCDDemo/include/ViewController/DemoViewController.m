@@ -56,7 +56,7 @@
                              [NSString stringWithFormat:@"创建%ld个异步任务",_count],
                              [NSString stringWithFormat:@"在group中执行%ld个异步任务",_count]];
     _sections = @[sectionmodel,sectionmodel2,sectionmodel3,sectionmodel4,sectionmodel5,sectionmodel6];
-    initDispatchPool();
+    dispatch_pool_init();
 }
 
 - (void)setupUI{
