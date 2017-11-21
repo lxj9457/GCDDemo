@@ -246,7 +246,7 @@
                 case 0:{
                     dispatch_queue_t queue = dispatch_pool_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
                     for (NSInteger i = 0; i < _count; i++) {
-                        dispatch_pool_queue_sync(queue, ^{
+                        dispatch_pool_sync(queue, ^{
                             NSLog(@"%d:thread-info:%@开始执行任务",(int)i,[NSThread currentThread]);
                             sleep(random()%4+0.2);
                             NSLog(@"%d:thread-info:%@结束执行任务",(int)i,[NSThread currentThread]);
@@ -259,7 +259,7 @@
                     //                    dispatch_queue_t queue = dispatch_pool_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
                     dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
                     for (NSInteger i = 0; i < _count; i++) {
-                        dispatch_pool_queue_async(queue, ^{
+                        dispatch_pool_async(queue, ^{
                             NSLog(@"%d:thread-info:%@开始执行任务",(int)i,[NSThread currentThread]);
                             sleep(random()%4+0.2);
                             NSLog(@"%d:thread-info:%@结束执行任务",(int)i,[NSThread currentThread]);

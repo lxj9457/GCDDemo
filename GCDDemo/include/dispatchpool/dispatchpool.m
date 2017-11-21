@@ -136,27 +136,27 @@ void dispatch_pool_async(dispatch_queue_t queue,dispatch_block_t block){
     }
 }
 
-void dispatch_pool_async_f(dispatch_queue_t queue, void *_Nullable context, dispatch_function_t work){
-//    if (!block) {
-//        return;
+//void dispatch_pool_async_f(dispatch_queue_t queue, void *_Nullable context, dispatch_function_t work){
+////    if (!block) {
+////        return;
+////    }
+//    dispatch_qos_class_t qos = dispatch_queue_get_qos_class(queue, NULL);
+//    if(is_qos_class_user_interactive(qos)){
+//        dispatch_async_f(queue, context, work);
+//    }else{
+//        dispatch_queue_t lineQueue = dispatch_pool_get_line_queue_with_qos(qos);
+//        dispatch_semaphore_t semaphorse = dispatch_pool_get_line_queue_semaphore_with_qos(qos);
+//        dispatch_async(lineQueue,^{
+//            dispatch_semaphore_wait(semaphorse, DISPATCH_TIME_FOREVER);
+////            dispatch_async_f(queue,NULL,dispatch_pool_sync_f_with_semaphore(semaphorse,context,work));
+//        });
 //    }
-    dispatch_qos_class_t qos = dispatch_queue_get_qos_class(queue, NULL);
-    if(is_qos_class_user_interactive(qos)){
-        dispatch_async_f(queue, context, work);
-    }else{
-        dispatch_queue_t lineQueue = dispatch_pool_get_line_queue_with_qos(qos);
-        dispatch_semaphore_t semaphorse = dispatch_pool_get_line_queue_semaphore_with_qos(qos);
-        dispatch_async(lineQueue,^{
-            dispatch_semaphore_wait(semaphorse, DISPATCH_TIME_FOREVER);
-            dispatch_async_f(queue,NULL,dispatch_pool_sync_f_with_semaphore(semaphorse,context,work));
-        });
-    }
-}
-
-dispatch_function_t dispatch_pool_sync_f_with_semaphore(dispatch_semaphore_t semaphorse, void *_Nullable context, dispatch_function_t work){
-    work(context);
-    dispatch_semaphore_signal(semaphorse);
-}
+//}
+//
+//dispatch_function_t dispatch_pool_sync_f_with_semaphore(dispatch_semaphore_t semaphorse, void *_Nullable context, dispatch_function_t work){
+//    work(context);
+//    dispatch_semaphore_signal(semaphorse);
+//}
 
 dispatch_group_t dispatch_pool_group_create(){
     return dispatch_group_create();
