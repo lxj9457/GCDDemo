@@ -7,9 +7,11 @@
 //
 
 #import "dispatchpool.h"
+#import "GPQActionStatistics.h"
 
 static dispatch_queue_t lineQueues[4] = {0};
 static dispatch_semaphore_t semaphores[4] = {0};
+static long task_id = 0;
 
 dispatch_queue_t dispatch_pool_get_global_queue(long identifier, unsigned long flags){
     dispatch_queue_t queue = dispatch_get_global_queue(identifier, flags);
@@ -31,6 +33,8 @@ void dispatch_pool_init(){
     semaphores[1] = dispatch_semaphore_create(6);
     semaphores[2] = dispatch_semaphore_create(5);
     semaphores[3] = dispatch_semaphore_create(7);
+//    create_message_list();
+    printf("init");
 }
 
 dispatch_semaphore_t dispatch_pool_get_line_queue_semaphore_with_qos(dispatch_qos_class_t qos){
@@ -85,6 +89,32 @@ dispatch_queue_t dispatch_pool_get_line_queue_with_qos(dispatch_qos_class_t qos)
     return queue;
 }
 
+char *qosStr_with_qos(dispatch_qos_class_t qos){
+    char *qosStr;
+    switch (qos) {
+        case QOS_CLASS_UNSPECIFIED:
+        case QOS_CLASS_DEFAULT:{
+            qosStr = "默认优先级";
+        }break;
+        case QOS_CLASS_USER_INITIATED:{
+            qosStr = "高优先级";
+        }break;
+        case QOS_CLASS_UTILITY:{
+            qosStr = "低优先级";
+        }break;
+        case QOS_CLASS_BACKGROUND:{
+            qosStr = "后台优先级";
+        }break;
+        case QOS_CLASS_USER_INTERACTIVE:{
+            qosStr = "主线程";
+        }break;
+        default:{
+            qosStr = "默认优先级";
+        }break;
+    }
+    return qosStr;
+}
+
 BOOL is_qos_class_user_interactive(dispatch_qos_class_t qos){
     if(qos == QOS_CLASS_USER_INTERACTIVE){
         return true;
@@ -98,17 +128,24 @@ void dispatch_pool_sync(dispatch_queue_t queue,dispatch_block_t block){
     }
     dispatch_qos_class_t qos = dispatch_queue_get_qos_class(queue, NULL);
     if(is_qos_class_user_interactive(qos)){
+        NSLog(@"%@加入到任务队列中",[NSThread currentThread]);
         dispatch_sync(queue, block);
     }else{
         dispatch_queue_t lineQueue = dispatch_pool_get_line_queue_with_qos(qos);
         dispatch_semaphore_t semaphorse = dispatch_pool_get_line_queue_semaphore_with_qos(qos);
         dispatch_async(lineQueue,^{
+            add_message_to_list("加入到排队队列中等待信号量\n");
+//            NSLog(@"%@加入到排队队列中等待信号量",[NSThread currentThread]);
             dispatch_semaphore_wait(semaphorse, DISPATCH_TIME_FOREVER);
             dispatch_sync(queue,^{
+                add_message_to_list("加入到执行队列中\n");
+//                NSLog(@"%@加入到任务队列中",[NSThread currentThread]);
                 if (block) {
                     block();
                 }
                 dispatch_semaphore_signal(semaphorse);
+                add_message_to_list("完成任务释放信号量\n");
+//                NSLog(@"%@完成任务释放信号量",[NSThread currentThread]);
             });
         });
     }
@@ -125,38 +162,21 @@ void dispatch_pool_async(dispatch_queue_t queue,dispatch_block_t block){
         dispatch_queue_t lineQueue = dispatch_pool_get_line_queue_with_qos(qos);
         dispatch_semaphore_t semaphorse = dispatch_pool_get_line_queue_semaphore_with_qos(qos);
         dispatch_async(lineQueue,^{
+            add_message_to_list("加入到排队队列中等待信号量\n");
             dispatch_semaphore_wait(semaphorse, DISPATCH_TIME_FOREVER);
             dispatch_async(queue,^{
+                add_message_to_list("加入到执行队列中\n");
+//                NSLog(@"%@加入到%@任务队列中",[NSString stringWithUTF8String:qosStr_with_qos([NSThread currentThread].qualityOfService)],
+//                      [NSString stringWithUTF8String:qosStr_with_qos(qos)]);
                 if (block) {
                     block();
                 }
                 dispatch_semaphore_signal(semaphorse);
+                add_message_to_list("完成任务释放信号量\n");
             });
         });
     }
 }
-
-//void dispatch_pool_async_f(dispatch_queue_t queue, void *_Nullable context, dispatch_function_t work){
-////    if (!block) {
-////        return;
-////    }
-//    dispatch_qos_class_t qos = dispatch_queue_get_qos_class(queue, NULL);
-//    if(is_qos_class_user_interactive(qos)){
-//        dispatch_async_f(queue, context, work);
-//    }else{
-//        dispatch_queue_t lineQueue = dispatch_pool_get_line_queue_with_qos(qos);
-//        dispatch_semaphore_t semaphorse = dispatch_pool_get_line_queue_semaphore_with_qos(qos);
-//        dispatch_async(lineQueue,^{
-//            dispatch_semaphore_wait(semaphorse, DISPATCH_TIME_FOREVER);
-////            dispatch_async_f(queue,NULL,dispatch_pool_sync_f_with_semaphore(semaphorse,context,work));
-//        });
-//    }
-//}
-//
-//dispatch_function_t dispatch_pool_sync_f_with_semaphore(dispatch_semaphore_t semaphorse, void *_Nullable context, dispatch_function_t work){
-//    work(context);
-//    dispatch_semaphore_signal(semaphorse);
-//}
 
 dispatch_group_t dispatch_pool_group_create(){
     return dispatch_group_create();
@@ -234,11 +254,11 @@ void dispatch_pool_group_leave(dispatch_group_t group){
     dispatch_group_leave(group);
 }
 
-///*
-// 在group任务完成后回调，用于替代GCD的 dispatch_group_notify 接口，便于埋点统计和后续优化
-// */
-//void dispatch_pool_group_notify(dispatch_group_t group, dispatch_queue_t queue, dispatch_block_t block){
-//
-//}
+/*
+ 在group任务完成后回调，用于替代GCD的 dispatch_group_notify 接口，便于埋点统计和后续优化
+ */
+void dispatch_pool_group_notify(dispatch_group_t group, dispatch_queue_t queue, dispatch_block_t block){
+    dispatch_group_notify(group, queue,block);
+}
 
 

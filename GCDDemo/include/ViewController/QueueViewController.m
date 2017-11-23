@@ -105,19 +105,24 @@
         [self log:qos];
     }else if(indexPath.section == 1){
         queue = [self ququeByTag:indexPath.row];
-//        NSLog(@"%d:%@开始队列池异步任务",_currentTaskId,dispatch_get_current_queue);
+        __block int currentId = _currentTaskId;
+        _currentTaskId++;
+        NSLog(@"%d:%@开始队列池异步任务",currentId,[NSThread currentThread]);
         dispatch_pool_async(queue, ^{
-            NSLog(@"%d:%@开始执行异步任务",_currentTaskId,[NSThread currentThread]);
-            sleep(random()%4+0.2);
-            NSLog(@"%d:%@结束执行异步任务",_currentTaskId,[NSThread currentThread]);
+            NSLog(@"%d:%@开始执行异步任务",currentId,[NSThread currentThread]);
+            sleep(random()%4+1);
+            NSLog(@"%d:%@结束执行异步任务",currentId,[NSThread currentThread]);
         });
     }else if(indexPath.section == 2){
         queue = [self ququeByTag:indexPath.row];
-        //        NSLog(@"%d:%@开始队列池异步任务",_currentTaskId,dispatch_get_current_queue);
+        __block int currentId = _currentTaskId;
+        _currentTaskId++;
+        NSLog(@"%d:%@开始队列池异步任务",currentId,[NSThread currentThread]);
         dispatch_pool_sync(queue, ^{
-            NSLog(@"%d:%@开始执行同步任务",_currentTaskId,[NSThread currentThread]);
-            sleep(random()%4+0.2);
-            NSLog(@"%d:%@结束执行同步任务",_currentTaskId,[NSThread currentThread]);
+            _currentTaskId ++;
+            NSLog(@"%d:%@开始执行同步任务",currentId,[NSThread currentThread]);
+            sleep(random()%4+1);
+            NSLog(@"%d:%@结束执行同步任务",currentId,[NSThread currentThread]);
         });
     }
 }
