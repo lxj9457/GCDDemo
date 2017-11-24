@@ -33,7 +33,7 @@ void dispatch_pool_init(){
     semaphores[1] = dispatch_semaphore_create(6);
     semaphores[2] = dispatch_semaphore_create(5);
     semaphores[3] = dispatch_semaphore_create(7);
-//    create_message_list();
+    gMessageList = initMessageList();
     printf("init");
 }
 
@@ -127,6 +127,9 @@ void dispatch_pool_sync(dispatch_queue_t queue,dispatch_block_t block){
         return;
     }
     dispatch_qos_class_t qos = dispatch_queue_get_qos_class(queue, NULL);
+    __block long current_task_id = task_id;
+    task_id++;
+    enList(gMessageList, &(Message){current_task_id,"","","dispatch_pool_sync",qos,CFAbsoluteTimeGetCurrent()});
     if(is_qos_class_user_interactive(qos)){
         NSLog(@"%@加入到任务队列中",[NSThread currentThread]);
         dispatch_sync(queue, block);
@@ -134,18 +137,15 @@ void dispatch_pool_sync(dispatch_queue_t queue,dispatch_block_t block){
         dispatch_queue_t lineQueue = dispatch_pool_get_line_queue_with_qos(qos);
         dispatch_semaphore_t semaphorse = dispatch_pool_get_line_queue_semaphore_with_qos(qos);
         dispatch_async(lineQueue,^{
-            add_message_to_list("加入到排队队列中等待信号量\n");
-//            NSLog(@"%@加入到排队队列中等待信号量",[NSThread currentThread]);
+            enList(gMessageList, &(Message){current_task_id,"","","加入到排队队列中等待信号量",qos,CFAbsoluteTimeGetCurrent()});
             dispatch_semaphore_wait(semaphorse, DISPATCH_TIME_FOREVER);
             dispatch_sync(queue,^{
-                add_message_to_list("加入到执行队列中\n");
-//                NSLog(@"%@加入到任务队列中",[NSThread currentThread]);
+                enList(gMessageList, &(Message){current_task_id,"","","加入到执行队列中",qos,CFAbsoluteTimeGetCurrent()});
                 if (block) {
                     block();
                 }
                 dispatch_semaphore_signal(semaphorse);
-                add_message_to_list("完成任务释放信号量\n");
-//                NSLog(@"%@完成任务释放信号量",[NSThread currentThread]);
+                enList(gMessageList, &(Message){current_task_id,"","","完成任务释放信号量",qos,CFAbsoluteTimeGetCurrent()});
             });
         });
     }
@@ -156,23 +156,27 @@ void dispatch_pool_async(dispatch_queue_t queue,dispatch_block_t block){
         return;
     }
     dispatch_qos_class_t qos = dispatch_queue_get_qos_class(queue, NULL);
+    __block long current_task_id = task_id;
+    task_id++;
+    Message message = {current_task_id,"","","dispatch_pool_async",qos,CFAbsoluteTimeGetCurrent()};
+    enList(gMessageList, &message);
     if(is_qos_class_user_interactive(qos)){
         dispatch_async(queue, block);
     }else{
         dispatch_queue_t lineQueue = dispatch_pool_get_line_queue_with_qos(qos);
         dispatch_semaphore_t semaphorse = dispatch_pool_get_line_queue_semaphore_with_qos(qos);
         dispatch_async(lineQueue,^{
-            add_message_to_list("加入到排队队列中等待信号量\n");
+            enList(gMessageList, &(Message){current_task_id,"","","加入到排队队列中等待信号量",qos,CFAbsoluteTimeGetCurrent()});
             dispatch_semaphore_wait(semaphorse, DISPATCH_TIME_FOREVER);
             dispatch_async(queue,^{
-                add_message_to_list("加入到执行队列中\n");
+                enList(gMessageList, &(Message){current_task_id,"","","加入到执行队列中",qos,CFAbsoluteTimeGetCurrent()});
 //                NSLog(@"%@加入到%@任务队列中",[NSString stringWithUTF8String:qosStr_with_qos([NSThread currentThread].qualityOfService)],
 //                      [NSString stringWithUTF8String:qosStr_with_qos(qos)]);
                 if (block) {
                     block();
                 }
                 dispatch_semaphore_signal(semaphorse);
-                add_message_to_list("完成任务释放信号量\n");
+                enList(gMessageList, &(Message){current_task_id,"","","完成任务释放信号量",qos,CFAbsoluteTimeGetCurrent()});
             });
         });
     }

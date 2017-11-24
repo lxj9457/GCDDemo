@@ -9,6 +9,8 @@
 #import "QueueViewController.h"
 #import "GCDSectionModel.h"
 #import "dispatchpool.h"
+#import "GPQActionStatistics.h"
+#import <Masonry/Masonry.h>
 
 @interface QueueViewController ()<UITableViewDelegate,UITableViewDataSource>
 
@@ -49,23 +51,35 @@
     GCDSectionModel *sectionmodel2 = [[GCDSectionModel alloc]init];
     sectionmodel2.sectionTitle = @"dispatch_pool同步功能测试";
     sectionmodel2.titles = @[@"增加一个主线程同步操作",
-                            @"增加一个全局高优先级同步操作",
-                            @"增加一个全局中优先级同步操作",
-                            @"增加一个全局低优先级同步操作",
-                            @"增加一个全局后台优先级同步操作"
-                            ];
-    _sections = @[sectionmodel,sectionmodel1,sectionmodel2];
+                             @"增加一个全局高优先级同步操作",
+                             @"增加一个全局中优先级同步操作",
+                             @"增加一个全局低优先级同步操作",
+                             @"增加一个全局后台优先级同步操作"
+                             ];
+    GCDSectionModel *sectionmodel3 = [[GCDSectionModel alloc]init];
+    sectionmodel3.sectionTitle = @"其他操作";
+    sectionmodel3.titles = @[@"输出log"];
+    
+    _sections = @[sectionmodel,sectionmodel1,sectionmodel2,sectionmodel3];
     dispatch_pool_init();
 }
 
 - (void)setupUI{
-    _tableview = [[UITableView alloc]initWithFrame:self.view.bounds style:UITableViewStylePlain];
+    _tableview = [[UITableView alloc]initWithFrame:CGRectZero style:UITableViewStylePlain];
     _tableview.delegate = self;
     _tableview.dataSource = self;
-    _tableview.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     [_tableview registerClass:[UITableViewCell class] forCellReuseIdentifier:@"tableviewcell"];
     [_tableview registerClass:[UITableViewHeaderFooterView class] forHeaderFooterViewReuseIdentifier:@"headerView"];
     [self.view addSubview:_tableview];
+    __weak __typeof(self)weakSelf = self;
+    [_tableview mas_makeConstraints:^(MASConstraintMaker *make) {
+        make.edges.equalTo(weakSelf.view);
+    }];
+//    UIButton *button = [[UIButton alloc]initWithFrame:CGRectZero];
+//    [self.view addSubview:button];
+//    [button mas_makeConstraints:^(MASConstraintMaker *make) {
+//        make.edges.equalTo(weakSelf.view);
+//    }];
 }
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView{
@@ -124,6 +138,8 @@
             sleep(random()%4+1);
             NSLog(@"%d:%@结束执行同步任务",currentId,[NSThread currentThread]);
         });
+    }else if(indexPath.section == 3 && indexPath.row == 0){
+        [[GPQActionStatistics shareInstance] putoutAllLog];
     }
 }
 
