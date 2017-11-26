@@ -9,20 +9,32 @@
 #import <Foundation/Foundation.h>
 
 #include <stdlib.h>
-#include <pthread.h>
+#include <pthread.h>s
 
-
-//typedef enum taskStatus{
-//    taskStatusEnterLineQueue = 1;
-//    taskStatusWait = ;
-//    taskStatusLeaveLineQueue = 0;
-//};
+typedef enum{
+    fun_dispatch_pool_queue_create = 1,
+    fun_dispatch_pool_get_global_queue = 2,
+    fun_dispatch_pool_async = 3,
+    fun_dispatch_pool_sync = 4,
+    fun_dispatch_pool_group_create = 5,
+    fun_dispatch_pool_group_async = 6,
+    fun_dispatch_pool_group_sync = 7,
+    fun_dispatch_pool_group_enter = 8,
+    fun_dispatch_pool_group_leave = 9,
+    fun_dispatch_pool_group_notify = 10,
+    taskStatus_EnterLineQueue = 101,
+    taskStatus_WaitSemaphore = 102,
+    taskStatus_StartTask = 103,
+    taskStatus_EndTask = 104,
+    taskStatus_LeaveLineQueue = 105,
+    taskStatus_Unkown = 106,
+}infoType;
 
 typedef struct{
     long task_id;
     char *task_info;
     char *queue_info;
-    char *action_info;
+    infoType info_type;
     int qos;
     double time;
 }Message;

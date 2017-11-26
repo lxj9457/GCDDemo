@@ -129,23 +129,22 @@ void dispatch_pool_sync(dispatch_queue_t queue,dispatch_block_t block){
     dispatch_qos_class_t qos = dispatch_queue_get_qos_class(queue, NULL);
     __block long current_task_id = task_id;
     task_id++;
-    enList(gMessageList, &(Message){current_task_id,"","","dispatch_pool_sync",qos,CFAbsoluteTimeGetCurrent()});
+    enList(gMessageList, &(Message){current_task_id,"","",fun_dispatch_pool_sync,qos,CFAbsoluteTimeGetCurrent()});
     if(is_qos_class_user_interactive(qos)){
-        NSLog(@"%@加入到任务队列中",[NSThread currentThread]);
         dispatch_sync(queue, block);
     }else{
         dispatch_queue_t lineQueue = dispatch_pool_get_line_queue_with_qos(qos);
         dispatch_semaphore_t semaphorse = dispatch_pool_get_line_queue_semaphore_with_qos(qos);
         dispatch_async(lineQueue,^{
-            enList(gMessageList, &(Message){current_task_id,"","","加入到排队队列中等待信号量",qos,CFAbsoluteTimeGetCurrent()});
+            enList(gMessageList, &(Message){current_task_id,"","",taskStatus_EnterLineQueue,qos,CFAbsoluteTimeGetCurrent()});
             dispatch_semaphore_wait(semaphorse, DISPATCH_TIME_FOREVER);
             dispatch_sync(queue,^{
-                enList(gMessageList, &(Message){current_task_id,"","","加入到执行队列中",qos,CFAbsoluteTimeGetCurrent()});
+                enList(gMessageList, &(Message){current_task_id,"","",taskStatus_StartTask,qos,CFAbsoluteTimeGetCurrent()});
                 if (block) {
                     block();
                 }
                 dispatch_semaphore_signal(semaphorse);
-                enList(gMessageList, &(Message){current_task_id,"","","完成任务释放信号量",qos,CFAbsoluteTimeGetCurrent()});
+                enList(gMessageList, &(Message){current_task_id,"","",taskStatus_EndTask,qos,CFAbsoluteTimeGetCurrent()});
             });
         });
     }
@@ -158,31 +157,29 @@ void dispatch_pool_async(dispatch_queue_t queue,dispatch_block_t block){
     dispatch_qos_class_t qos = dispatch_queue_get_qos_class(queue, NULL);
     __block long current_task_id = task_id;
     task_id++;
-    Message message = {current_task_id,"","","dispatch_pool_async",qos,CFAbsoluteTimeGetCurrent()};
-    enList(gMessageList, &message);
+    enList(gMessageList, &(Message){current_task_id,"","",fun_dispatch_pool_async,qos,CFAbsoluteTimeGetCurrent()});
     if(is_qos_class_user_interactive(qos)){
         dispatch_async(queue, block);
     }else{
         dispatch_queue_t lineQueue = dispatch_pool_get_line_queue_with_qos(qos);
         dispatch_semaphore_t semaphorse = dispatch_pool_get_line_queue_semaphore_with_qos(qos);
         dispatch_async(lineQueue,^{
-            enList(gMessageList, &(Message){current_task_id,"","","加入到排队队列中等待信号量",qos,CFAbsoluteTimeGetCurrent()});
+            enList(gMessageList, &(Message){current_task_id,"","",taskStatus_EnterLineQueue,qos,CFAbsoluteTimeGetCurrent()});
             dispatch_semaphore_wait(semaphorse, DISPATCH_TIME_FOREVER);
             dispatch_async(queue,^{
-                enList(gMessageList, &(Message){current_task_id,"","","加入到执行队列中",qos,CFAbsoluteTimeGetCurrent()});
-//                NSLog(@"%@加入到%@任务队列中",[NSString stringWithUTF8String:qosStr_with_qos([NSThread currentThread].qualityOfService)],
-//                      [NSString stringWithUTF8String:qosStr_with_qos(qos)]);
+                enList(gMessageList, &(Message){current_task_id,"","",taskStatus_StartTask,qos,CFAbsoluteTimeGetCurrent()});
                 if (block) {
                     block();
                 }
                 dispatch_semaphore_signal(semaphorse);
-                enList(gMessageList, &(Message){current_task_id,"","","完成任务释放信号量",qos,CFAbsoluteTimeGetCurrent()});
+                enList(gMessageList, &(Message){current_task_id,"","",taskStatus_EndTask,qos,CFAbsoluteTimeGetCurrent()});
             });
         });
     }
 }
 
 dispatch_group_t dispatch_pool_group_create(){
+    enList(gMessageList, &(Message){0,"","",fun_dispatch_pool_group_create,-1,CFAbsoluteTimeGetCurrent()});
     return dispatch_group_create();
 }
 
@@ -196,7 +193,10 @@ void dispatch_pool_group_async(dispatch_group_t group,dispatch_queue_t queue,dis
     if (!block) {
         return;
     }
-    dispatch_qos_class_t qos = dispatch_queue_get_qos_class(queue, NULL);
+        dispatch_qos_class_t qos = dispatch_queue_get_qos_class(queue, NULL);
+    __block long current_task_id = task_id;
+    task_id++;
+    enList(gMessageList, &(Message){current_task_id,"","",fun_dispatch_pool_group_async,qos,CFAbsoluteTimeGetCurrent()});
     if(is_qos_class_user_interactive(qos)){
         dispatch_group_async(group,queue, block);
     }else{
@@ -225,6 +225,9 @@ void dispatch_pool_group_sync(dispatch_group_t group,dispatch_queue_t queue,disp
         return;
     }
     dispatch_qos_class_t qos = dispatch_queue_get_qos_class(queue, NULL);
+    __block long current_task_id = task_id;
+    task_id++;
+    enList(gMessageList, &(Message){current_task_id,"","",fun_dispatch_pool_group_sync,qos,CFAbsoluteTimeGetCurrent()});
     if(is_qos_class_user_interactive(qos)){
         dispatch_group_async(group, queue, block);
     }else{
@@ -247,6 +250,9 @@ void dispatch_pool_group_sync(dispatch_group_t group,dispatch_queue_t queue,disp
  @param group 组
  */
 void dispatch_pool_group_enter(dispatch_group_t group){
+    __block long current_task_id = task_id;
+    task_id++;
+    enList(gMessageList, &(Message){current_task_id,"","",fun_dispatch_pool_group_enter,-1,CFAbsoluteTimeGetCurrent()});
     dispatch_group_enter(group);
 }
 
@@ -255,6 +261,9 @@ void dispatch_pool_group_enter(dispatch_group_t group){
  @param group 组
  */
 void dispatch_pool_group_leave(dispatch_group_t group){
+    __block long current_task_id = task_id;
+    task_id++;
+    enList(gMessageList, &(Message){current_task_id,"","",fun_dispatch_pool_group_leave,-1,CFAbsoluteTimeGetCurrent()});
     dispatch_group_leave(group);
 }
 
@@ -262,6 +271,7 @@ void dispatch_pool_group_leave(dispatch_group_t group){
  在group任务完成后回调，用于替代GCD的 dispatch_group_notify 接口，便于埋点统计和后续优化
  */
 void dispatch_pool_group_notify(dispatch_group_t group, dispatch_queue_t queue, dispatch_block_t block){
+    enList(gMessageList, &(Message){0,"","",fun_dispatch_pool_group_notify,-1,CFAbsoluteTimeGetCurrent()});
     dispatch_group_notify(group, queue,block);
 }
 

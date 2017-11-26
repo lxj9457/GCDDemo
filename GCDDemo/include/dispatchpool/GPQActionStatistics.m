@@ -10,6 +10,7 @@
 
 MessageList *gMessageList;
 
+char *infoWithType(infoType info_type);
 /*构造一个空队列*/
 MessageList *initMessageList(){
     MessageList *plist = (MessageList *)malloc(sizeof(MessageList));
@@ -134,7 +135,65 @@ void messageListTraverse(MessageList *plist, void (*visit)(Message *message)){
 }
 
 void printMessage(Message *message){
-    printf("{\"task_id:%ld\",\"qos\":%d,\"log\":%s,\"time\":%f},\n",message->task_id, message->qos, message->action_info,message->time);
+    printf("{\"task_id:%ld\",\"qos\":%d,\"log\":%s,\"time\":%f},\n",message->task_id, message->qos, infoWithType(message->info_type),message->time);
+}
+
+char *infoWithType(infoType info_type){
+    char *info_string;
+    switch (info_type) {
+        case fun_dispatch_pool_queue_create:
+            info_string = "call:创建一个队列";
+            break;
+        case fun_dispatch_pool_get_global_queue:
+            info_string = "call:获取全局队列";
+            break;
+        case fun_dispatch_pool_async:
+            info_string = "call:队列异步对方法";
+            break;
+        case fun_dispatch_pool_sync:
+            info_string = "call:队列同步方法";
+            break;
+        case fun_dispatch_pool_group_create:
+            info_string = "call:创建group";
+            break;
+        case fun_dispatch_pool_group_async:
+            info_string = "call:group异步方法";
+            break;
+        case fun_dispatch_pool_group_sync:
+            info_string = "call:group同步方法";
+            break;
+        case fun_dispatch_pool_group_enter:
+            info_string = "call:group增加任务";
+            break;
+        case fun_dispatch_pool_group_leave:
+            info_string = "call:group减少任务";
+            break;
+        case fun_dispatch_pool_group_notify:
+            info_string = "call:group完成任务通知";
+            break;
+        case taskStatus_EnterLineQueue:
+            info_string = "status:任务加入排队队列";
+            break;
+        case taskStatus_WaitSemaphore:
+            info_string = "status:任务等待信号量";
+            break;
+        case taskStatus_StartTask:
+            info_string = "status:开始执行任务";
+            break;
+        case taskStatus_EndTask:
+            info_string = "status:完成任务";
+            break;
+        case taskStatus_LeaveLineQueue:
+            info_string = "status:离开排队队列任务";
+            break;
+        case taskStatus_Unkown:
+            info_string = "状态未知";
+            break;
+        default:
+            info_string = "\0";
+            break;
+    }
+    return info_string;
 }
 
 static GPQActionStatistics *instance;
