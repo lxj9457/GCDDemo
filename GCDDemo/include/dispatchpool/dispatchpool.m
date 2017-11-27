@@ -29,10 +29,10 @@ void dispatch_pool_init(){
     lineQueues[1] = dispatch_pool_serial_queue_create("sdp.nd.serial_common_default", DISPATCH_QUEUE_PRIORITY_DEFAULT);
     lineQueues[2] = dispatch_pool_serial_queue_create("sdp.nd.serial_common_low", DISPATCH_QUEUE_PRIORITY_LOW);
     lineQueues[3] = dispatch_pool_serial_queue_create("sdp.nd.serial_common_background", DISPATCH_QUEUE_PRIORITY_BACKGROUND);
-    semaphores[0] = dispatch_semaphore_create(4);
-    semaphores[1] = dispatch_semaphore_create(6);
-    semaphores[2] = dispatch_semaphore_create(5);
-    semaphores[3] = dispatch_semaphore_create(7);
+    semaphores[0] = dispatch_semaphore_create(20);
+    semaphores[1] = dispatch_semaphore_create(20);
+    semaphores[2] = dispatch_semaphore_create(20);
+    semaphores[3] = dispatch_semaphore_create(20);
     gMessageList = initMessageList();
     printf("init");
 }
@@ -135,8 +135,8 @@ void dispatch_pool_sync(dispatch_queue_t queue,dispatch_block_t block){
     }else{
         dispatch_queue_t lineQueue = dispatch_pool_get_line_queue_with_qos(qos);
         dispatch_semaphore_t semaphorse = dispatch_pool_get_line_queue_semaphore_with_qos(qos);
-        dispatch_async(lineQueue,^{
-            enList(gMessageList, &(Message){current_task_id,"","",taskStatus_EnterLineQueue,qos,CFAbsoluteTimeGetCurrent()});
+//        dispatch_sync(lineQueue,^{
+//            enList(gMessageList, &(Message){current_task_id,"","",taskStatus_EnterLineQueue,qos,CFAbsoluteTimeGetCurrent()});
             dispatch_semaphore_wait(semaphorse, DISPATCH_TIME_FOREVER);
             dispatch_sync(queue,^{
                 enList(gMessageList, &(Message){current_task_id,"","",taskStatus_StartTask,qos,CFAbsoluteTimeGetCurrent()});
@@ -146,7 +146,7 @@ void dispatch_pool_sync(dispatch_queue_t queue,dispatch_block_t block){
                 dispatch_semaphore_signal(semaphorse);
                 enList(gMessageList, &(Message){current_task_id,"","",taskStatus_EndTask,qos,CFAbsoluteTimeGetCurrent()});
             });
-        });
+//        });
     }
 }
 
@@ -161,12 +161,12 @@ void dispatch_pool_async(dispatch_queue_t queue,dispatch_block_t block){
     if(is_qos_class_user_interactive(qos)){
         dispatch_async(queue, block);
     }else{
-        dispatch_queue_t lineQueue = dispatch_pool_get_line_queue_with_qos(qos);
+//        dispatch_queue_t lineQueue = dispatch_pool_get_line_queue_with_qos(qos);
         dispatch_semaphore_t semaphorse = dispatch_pool_get_line_queue_semaphore_with_qos(qos);
-        dispatch_async(lineQueue,^{
+//        dispatch_async(lineQueue,^{
             enList(gMessageList, &(Message){current_task_id,"","",taskStatus_EnterLineQueue,qos,CFAbsoluteTimeGetCurrent()});
-            dispatch_semaphore_wait(semaphorse, DISPATCH_TIME_FOREVER);
             dispatch_async(queue,^{
+                dispatch_semaphore_wait(semaphorse, DISPATCH_TIME_FOREVER);
                 enList(gMessageList, &(Message){current_task_id,"","",taskStatus_StartTask,qos,CFAbsoluteTimeGetCurrent()});
                 if (block) {
                     block();
@@ -174,7 +174,7 @@ void dispatch_pool_async(dispatch_queue_t queue,dispatch_block_t block){
                 dispatch_semaphore_signal(semaphorse);
                 enList(gMessageList, &(Message){current_task_id,"","",taskStatus_EndTask,qos,CFAbsoluteTimeGetCurrent()});
             });
-        });
+//        });
     }
 }
 

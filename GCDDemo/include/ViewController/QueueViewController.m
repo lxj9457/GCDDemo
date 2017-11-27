@@ -58,7 +58,7 @@
                              ];
     GCDSectionModel *sectionmodel3 = [[GCDSectionModel alloc]init];
     sectionmodel3.sectionTitle = @"其他操作";
-    sectionmodel3.titles = @[@"输出log"];
+    sectionmodel3.titles = @[@"输出log",@"测试dispatch_pool性能",@"测试gcd性能"];
     
     _sections = @[sectionmodel,sectionmodel1,sectionmodel2,sectionmodel3];
     dispatch_pool_init();
@@ -138,11 +138,52 @@
             sleep(random()%4+1);
             NSLog(@"%d:%@结束执行同步任务",currentId,[NSThread currentThread]);
         });
-    }else if(indexPath.section == 3 && indexPath.row == 0){
-        [[GPQActionStatistics shareInstance] putoutAllLog];
+    }else if(indexPath.section == 3){
+        if(indexPath.row == 0){
+            [[GPQActionStatistics shareInstance] putoutAllLog];
+        }else if(indexPath.row == 1){
+            double beginTime = CFAbsoluteTimeGetCurrent();
+            for(int i=0; i< 100000; i++){
+                dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+                dispatch_pool_async(queue, ^{
+                    [self actionWithTag:i info:"dispatch_pool"];
+//                    [self sleepWithTag:i time:0.1 info:@"dispatch_pool"];
+                    if(i==99999){
+                        double endTime = CFAbsoluteTimeGetCurrent();
+                        printf("100000个任务在dispatch_pool中执行时间为:%f\n",endTime-beginTime);
+                    }
+                });
+            }
+        }else if(indexPath.row == 2){
+            double beginTime = CFAbsoluteTimeGetCurrent();
+            for(int i=0; i< 100000; i++){
+                dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
+                dispatch_async(queue, ^{
+                    [self actionWithTag:i info:"gcd"];
+//                    [self sleepWithTag:i time:0.1 info:@"gcd"];
+                    if(i==99999){
+                        double endTime = CFAbsoluteTimeGetCurrent();
+                        printf("100000个任务在gcd中执行时间为:%f\n",endTime-beginTime);
+                    }
+                });
+            }
+        }
     }
 }
 
+- (void)actionWithTag:(int)tag info:(char *)info{
+    for(float k = 0.5; k < tag; k = k + 1){
+        if(k == tag - 0.5){
+            printf("%s:%d\n",info,tag);
+        }
+    }
+}
+
+
+- (void)sleepWithTag:(int)tag time:(double)time info:(char *)info{
+    sleep(time);
+    printf("%s:%d\n",info,tag);
+}
 
 - (dispatch_queue_t)ququeByTag:(NSInteger)tag{
     dispatch_queue_t queue;

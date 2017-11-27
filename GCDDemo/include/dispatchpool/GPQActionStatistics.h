@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 
 #include <stdlib.h>
-#include <pthread.h>s
+#include <pthread.h>
 
 typedef enum{
     fun_dispatch_pool_queue_create = 1,
