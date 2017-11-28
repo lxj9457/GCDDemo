@@ -147,7 +147,7 @@
                 dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
                 dispatch_pool_async(queue, ^{
 //                    [self actionWithTag:i info:@"dispatch_pool"];
-                    [self sleepWithTag:i time:0.1 info:@"dispatch_pool"];
+                    [self sleepWithTag:i time:0.005 info:@"dispatch_pool"];
                     if(i==99999){
                         double endTime = CFAbsoluteTimeGetCurrent();
                         NSLog(@"100000个任务在dispatch_pool中执行时间为:%f\n",endTime-beginTime);
@@ -160,7 +160,7 @@
                 dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
                 dispatch_async(queue, ^{
 //                    [self actionWithTag:i info:@"gcd"];
-                    [self sleepWithTag:i time:0.1 info:@"gcd"];
+                    [self sleepWithTag:i time:0.005 info:@"gcd"];
                     if(i==99999){
                         double endTime = CFAbsoluteTimeGetCurrent();
                         NSLog(@"100000个任务在gcd中执行时间为:%f\n",endTime-beginTime);
@@ -172,8 +172,8 @@
 }
 
 - (void)actionWithTag:(int)tag info:(NSString *)info{
-    for(float k = 0.5; k < tag * 10; k = k + 1){
-        if(k == tag - 0.5){
+    for(int k = 0; k < tag; k = k + 1){
+        if(k == tag - 1){
             NSLog(@"%@:%d\n",info,tag);
         }
     }

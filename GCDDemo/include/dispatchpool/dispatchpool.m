@@ -157,24 +157,24 @@ void dispatch_pool_async(dispatch_queue_t queue,dispatch_block_t block){
     dispatch_qos_class_t qos = dispatch_queue_get_qos_class(queue, NULL);
     __block long current_task_id = task_id;
     task_id++;
-//    enList(gMessageList, &(Message){current_task_id,"","",fun_dispatch_pool_async,qos,CFAbsoluteTimeGetCurrent()});
+    enList(gMessageList, &(Message){current_task_id,"","",fun_dispatch_pool_async,qos,CFAbsoluteTimeGetCurrent()});
     if(is_qos_class_user_interactive(qos)){
         dispatch_async(queue, block);
     }else{
-//        dispatch_queue_t lineQueue = dispatch_pool_get_line_queue_with_qos(qos);
+        dispatch_queue_t lineQueue = dispatch_pool_get_line_queue_with_qos(qos);
         dispatch_semaphore_t semaphorse = dispatch_pool_get_line_queue_semaphore_with_qos(qos);
-//        dispatch_async(lineQueue,^{
-//            enList(gMessageList, &(Message){current_task_id,"","",taskStatus_EnterLineQueue,qos,CFAbsoluteTimeGetCurrent()});
+        dispatch_async(lineQueue,^{
+            enList(gMessageList, &(Message){current_task_id,"","",taskStatus_EnterLineQueue,qos,CFAbsoluteTimeGetCurrent()});
+            dispatch_semaphore_wait(semaphorse, DISPATCH_TIME_FOREVER);
             dispatch_async(queue,^{
-                dispatch_semaphore_wait(semaphorse, 0.5);
-//                enList(gMessageList, &(Message){current_task_id,"","",taskStatus_StartTask,qos,CFAbsoluteTimeGetCurrent()});
+                enList(gMessageList, &(Message){current_task_id,"","",taskStatus_StartTask,qos,CFAbsoluteTimeGetCurrent()});
                 if (block) {
                     block();
                 }
                 dispatch_semaphore_signal(semaphorse);
-//                enList(gMessageList, &(Message){current_task_id,"","",taskStatus_EndTask,qos,CFAbsoluteTimeGetCurrent()});
+                enList(gMessageList, &(Message){current_task_id,"","",taskStatus_EndTask,qos,CFAbsoluteTimeGetCurrent()});
             });
-//        });
+        });
     }
 }
 
