@@ -130,12 +130,21 @@ void messageListTraverse(MessageList *plist, void (*visit)(Message *message)){
         visit(pnode->message);
         pnode = pnode->next;
     }
+    
 }
 
 void printMessage(Message *message){
     printf("{\"task_id:%ld\",\"qos\":%d,\"log\":\"%s\",\"time\":%f},\n",message->task_id, message->qos, infoWithType(message->info_type),message->time);
 }
-
+//
+//void analysis(Message *message){
+//    MessageNode *pnode = plist->front;
+//    int i = plist->size;
+//    while(i--){
+//        
+//        pnode = pnode->next;
+//    }
+//}
 
 char *infoWithType(infoType info_type){
     char *info_string;

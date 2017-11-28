@@ -9,7 +9,7 @@
 #import "QueueViewController.h"
 #import "GCDSectionModel.h"
 #import "dispatchpool.h"
-#import "GPQActionStatistics.h"
+#import "GPQActionAnalysis.h"
 #import <Masonry/Masonry.h>
 
 @interface QueueViewController ()<UITableViewDelegate,UITableViewDataSource>
@@ -140,13 +140,12 @@
         });
     }else if(indexPath.section == 3){
         if(indexPath.row == 0){
-            [[GPQActionStatistics shareInstance] putoutAllLog];
+            [[GPQActionAnalysis shareInstance] putoutAllLog];
         }else if(indexPath.row == 1){
             double beginTime = CFAbsoluteTimeGetCurrent();
             for(int i=0; i< 100000; i++){
                 dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
                 dispatch_pool_async(queue, ^{
-//                    [self actionWithTag:i info:@"dispatch_pool"];
                     [self sleepWithTag:i time:0.005 info:@"dispatch_pool"];
                     if(i==99999){
                         double endTime = CFAbsoluteTimeGetCurrent();
@@ -159,7 +158,6 @@
             for(int i=0; i< 100000; i++){
                 dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
                 dispatch_async(queue, ^{
-//                    [self actionWithTag:i info:@"gcd"];
                     [self sleepWithTag:i time:0.005 info:@"gcd"];
                     if(i==99999){
                         double endTime = CFAbsoluteTimeGetCurrent();
@@ -173,7 +171,7 @@
 
 - (void)actionWithTag:(int)tag info:(NSString *)info{
     for(int k = 0; k < tag; k = k + 1){
-        if(k == tag - 1){
+        if(k == tag - 1 && tag%100 ==0){
             NSLog(@"%@:%d\n",info,tag);
         }
     }
@@ -182,7 +180,9 @@
 
 - (void)sleepWithTag:(int)tag time:(double)time info:(NSString *)info{
     sleep(time);
-    NSLog(@"%@:%d\n",info,tag);
+    if(tag%100 ==0){
+        NSLog(@"%@:%d\n",info,tag);
+    }
 }
 
 - (dispatch_queue_t)ququeByTag:(NSInteger)tag{
