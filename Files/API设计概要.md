@@ -46,7 +46,7 @@ YYDispatchQueue在加入异步任务的时候就预先分配好了对应的queue
 
 1、**后加入队列池的任务**在**先加入队列池的任务**之前执行，即**执行顺序不稳定**的情况。
 
-![YYDispatchPool](image/YYDispatchPool.png)2、有的串行队列处于空闲状态，而有的串行队列处于长时间忙碌的状态
+![YYDispatchPool](images/YYDispatchPool.png)2、有的串行队列处于空闲状态，而有的串行队列处于长时间忙碌的状态
 
 根据log记录可知：
 
@@ -176,7 +176,7 @@ for (NSInteger i = 0; i < _count; i++) {
 
 时序图如下：
 
-![QSDispatchQueue](image/QSDispatchQueue.png)
+![QSDispatchQueue](images/QSDispatchQueue.png)
 
 ##### 特征：
 

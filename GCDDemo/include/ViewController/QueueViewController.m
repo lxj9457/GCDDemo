@@ -146,11 +146,11 @@
             for(int i=0; i< 100000; i++){
                 dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
                 dispatch_pool_async(queue, ^{
-                    [self actionWithTag:i info:"dispatch_pool"];
-//                    [self sleepWithTag:i time:0.1 info:@"dispatch_pool"];
+//                    [self actionWithTag:i info:@"dispatch_pool"];
+                    [self sleepWithTag:i time:0.1 info:@"dispatch_pool"];
                     if(i==99999){
                         double endTime = CFAbsoluteTimeGetCurrent();
-                        printf("100000个任务在dispatch_pool中执行时间为:%f\n",endTime-beginTime);
+                        NSLog(@"100000个任务在dispatch_pool中执行时间为:%f\n",endTime-beginTime);
                     }
                 });
             }
@@ -159,11 +159,11 @@
             for(int i=0; i< 100000; i++){
                 dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
                 dispatch_async(queue, ^{
-                    [self actionWithTag:i info:"gcd"];
-//                    [self sleepWithTag:i time:0.1 info:@"gcd"];
+//                    [self actionWithTag:i info:@"gcd"];
+                    [self sleepWithTag:i time:0.1 info:@"gcd"];
                     if(i==99999){
                         double endTime = CFAbsoluteTimeGetCurrent();
-                        printf("100000个任务在gcd中执行时间为:%f\n",endTime-beginTime);
+                        NSLog(@"100000个任务在gcd中执行时间为:%f\n",endTime-beginTime);
                     }
                 });
             }
@@ -171,18 +171,18 @@
     }
 }
 
-- (void)actionWithTag:(int)tag info:(char *)info{
-    for(float k = 0.5; k < tag; k = k + 1){
+- (void)actionWithTag:(int)tag info:(NSString *)info{
+    for(float k = 0.5; k < tag * 10; k = k + 1){
         if(k == tag - 0.5){
-            printf("%s:%d\n",info,tag);
+            NSLog(@"%@:%d\n",info,tag);
         }
     }
 }
 
 
-- (void)sleepWithTag:(int)tag time:(double)time info:(char *)info{
+- (void)sleepWithTag:(int)tag time:(double)time info:(NSString *)info{
     sleep(time);
-    printf("%s:%d\n",info,tag);
+    NSLog(@"%@:%d\n",info,tag);
 }
 
 - (dispatch_queue_t)ququeByTag:(NSInteger)tag{
