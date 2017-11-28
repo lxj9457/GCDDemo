@@ -145,6 +145,7 @@ void dispatch_pool_sync(dispatch_queue_t queue,dispatch_block_t block){
                 if (block) {
                     block();
                 }
+                dispatch_semaphore_signal(semaphorse);
                 CFAbsoluteTime endTime = CFAbsoluteTimeGetCurrent();
                 enList(gMessageList, &(Message){current_task_id,"","",taskStatus_StartTask,qos,endTime - startTime});
             });
@@ -175,6 +176,7 @@ void dispatch_pool_async(dispatch_queue_t queue,dispatch_block_t block){
                 if (block) {
                     block();
                 }
+                dispatch_semaphore_signal(semaphorse);
                 CFAbsoluteTime endTime = CFAbsoluteTimeGetCurrent();
                 enList(gMessageList, &(Message){current_task_id,"","",taskStatus_StartTask,qos,endTime - startTime});
             });
