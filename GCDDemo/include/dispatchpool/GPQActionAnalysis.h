@@ -7,7 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-
 #include <stdlib.h>
 #include <pthread.h>
 
@@ -84,7 +83,7 @@ MessageNode *deList(MessageList *);
 void messageListTraverse(MessageList *plist, void (*visit)(Message *message));
 
 
-@interface GPQActionStatistics : NSObject
+@interface GPQActionAnalysis : NSObject
 
 + (instancetype)shareInstance;
 

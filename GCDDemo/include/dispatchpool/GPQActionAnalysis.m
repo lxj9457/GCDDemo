@@ -6,7 +6,7 @@
 //  Copyright © 2017年 林训键. All rights reserved.
 //
 
-#import "GPQActionStatistics.h"
+#import "GPQActionAnalysis.h"
 
 MessageList *gMessageList;
 
@@ -128,15 +128,14 @@ void messageListTraverse(MessageList *plist, void (*visit)(Message *message)){
     int i = plist->size;
     while(i--){
         visit(pnode->message);
-        
-//        ;
         pnode = pnode->next;
     }
 }
 
 void printMessage(Message *message){
-    printf("{\"task_id:%ld\",\"qos\":%d,\"log\":%s,\"time\":%f},\n",message->task_id, message->qos, infoWithType(message->info_type),message->time);
+    printf("{\"task_id:%ld\",\"qos\":%d,\"log\":\"%s\",\"time\":%f},\n",message->task_id, message->qos, infoWithType(message->info_type),message->time);
 }
+
 
 char *infoWithType(infoType info_type){
     char *info_string;
@@ -196,14 +195,9 @@ char *infoWithType(infoType info_type){
     return info_string;
 }
 
-static GPQActionStatistics *instance;
+static GPQActionAnalysis *instance;
 
-@implementation GPQActionStatistics
-
-//- (instancetype)init{
-//    self = [super init];
-//    return self;
-//}
+@implementation GPQActionAnalysis
 
 + (instancetype)shareInstance{
     static dispatch_once_t onceToken;
@@ -224,6 +218,10 @@ static GPQActionStatistics *instance;
 - (void)putoutAllLog{
     void (*print)(Message *message) = printMessage;
     messageListTraverse(gMessageList, print);
+}
+
+- (void)putoutAnalysisData{
+    
 }
 
 @end

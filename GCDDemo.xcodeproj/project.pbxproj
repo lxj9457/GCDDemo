@@ -21,7 +21,7 @@
 		A07C72A01FBE9652006D79CA /* QueueViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A04BCC581FBD92EC00FD336C /* QueueViewController.m */; };
 		A07C72A11FBE9699006D79CA /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A04BCC481FBD92EC00FD336C /* AppDelegate.m */; };
 		A07C72A21FBE9699006D79CA /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A04BCC491FBD92EC00FD336C /* main.m */; };
-		A0FD463F1FC3CCA500BAF15B /* GPQActionStatistics.m in Sources */ = {isa = PBXBuildFile; fileRef = A0FD463E1FC3CCA500BAF15B /* GPQActionStatistics.m */; };
+		A0FD463F1FC3CCA500BAF15B /* GPQActionAnalysis.m in Sources */ = {isa = PBXBuildFile; fileRef = A0FD463E1FC3CCA500BAF15B /* GPQActionAnalysis.m */; };
 		BA23650A5AE19EF996299456 /* libPods-GCDDemo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A01A11E627E6F5E16644DDBB /* libPods-GCDDemo.a */; };
 /* End PBXBuildFile section */
 
@@ -71,8 +71,8 @@
 		A04BCC601FBD977200FD336C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		A04BCC631FBD977200FD336C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A07C72441FBE90FE006D79CA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		A0FD463D1FC3CCA500BAF15B /* GPQActionStatistics.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GPQActionStatistics.h; sourceTree = "<group>"; };
-		A0FD463E1FC3CCA500BAF15B /* GPQActionStatistics.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GPQActionStatistics.m; sourceTree = "<group>"; };
+		A0FD463D1FC3CCA500BAF15B /* GPQActionAnalysis.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GPQActionAnalysis.h; sourceTree = "<group>"; };
+		A0FD463E1FC3CCA500BAF15B /* GPQActionAnalysis.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GPQActionAnalysis.m; sourceTree = "<group>"; };
 		C5D6511022BABD37048C2623 /* Pods-GCDDemo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GCDDemo.debug.xcconfig"; path = "Pods/Target Support Files/Pods-GCDDemo/Pods-GCDDemo.debug.xcconfig"; sourceTree = "<group>"; };
 		E4E201A1ACD344F7A9A678C5 /* libPods-GCDDemoTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-GCDDemoTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -189,8 +189,8 @@
 			children = (
 				A04BCC4C1FBD92EC00FD336C /* dispatchpool.h */,
 				A04BCC4D1FBD92EC00FD336C /* dispatchpool.m */,
-				A0FD463D1FC3CCA500BAF15B /* GPQActionStatistics.h */,
-				A0FD463E1FC3CCA500BAF15B /* GPQActionStatistics.m */,
+				A0FD463D1FC3CCA500BAF15B /* GPQActionAnalysis.h */,
+				A0FD463E1FC3CCA500BAF15B /* GPQActionAnalysis.m */,
 			);
 			path = dispatchpool;
 			sourceTree = "<group>";
@@ -480,7 +480,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A07C729D1FBE9652006D79CA /* GCDSectionModel.m in Sources */,
-				A0FD463F1FC3CCA500BAF15B /* GPQActionStatistics.m in Sources */,
+				A0FD463F1FC3CCA500BAF15B /* GPQActionAnalysis.m in Sources */,
 				A07C72A01FBE9652006D79CA /* QueueViewController.m in Sources */,
 				A07C72A11FBE9699006D79CA /* AppDelegate.m in Sources */,
 				A07C729C1FBE964E006D79CA /* dispatchpool.m in Sources */,
