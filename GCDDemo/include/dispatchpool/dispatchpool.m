@@ -8,10 +8,12 @@
 
 #import "dispatchpool.h"
 #import "GPQActionAnalysis.h"
+#import <libkern/OSAtomic.h>
 
 typedef struct task_node{
-    long task_id;
-    void (*fun)(dispatch_queue_t queue,dispatch_block_t block,struct task_node *node);
+    int task_id;
+    dispatch_queue_t queue;
+    dispatch_block_t block;
     struct task_node *pre;
     struct task_node *next;
 }taskNode;
@@ -24,92 +26,17 @@ typedef struct{
     pthread_cond_t cond;
 }taskList;
 
-taskList *gTaskList;
-
-taskList *initTaskList(){
-    taskList *plist = (taskList *)malloc(sizeof(taskList));
-    if(plist!=NULL){
-        plist->front = NULL;
-        plist->rear = NULL;
-        plist->size = 0;
-        pthread_mutex_init(&plist->q_lock, NULL);
-        pthread_cond_init(&plist->cond, NULL);
-    }
-    return plist;
-}
-
-int isTaskListEmpty(taskList *plist){
-    if(plist->front==NULL && plist->rear==NULL && plist->size==0){
-        return 1;
-    }else{
-        return 0;
-    }
-}
-
-int getTaskListSize(taskList *plist){
-    return plist->size;
-}
-
-taskNode *getTaskListFront(taskList *plist){
-    pthread_mutex_lock(&plist->q_lock);
-    while(isTaskListEmpty(plist)){
-        pthread_cond_wait(&plist->cond, &plist->q_lock);
-    }
-    taskNode *message = plist->front;
-    pthread_mutex_unlock(&plist->q_lock);
-    return message;//---->此处有bug，队列为空时，在锁释放后，plist->front可能被入队操作赋值，出现node等于NULL，而plist->front不等于NULL
-}
-
-MessageNode *getRear(MessageList *plist){
-    MessageNode *node = NULL;
-    if(!isEmpty(plist)) {
-        node = plist->rear;
-    }
-    return node;
-}
-
-/*将新元素入队*/
-void enTaskList(taskList *plist, taskNode *taskNode){
-    struct task_node *pnode = (struct task_node *)malloc(sizeof(taskNode));
-    memcpy(pnode, taskNode, sizeof(struct task_node));
-    if(pnode != NULL) {
-        pnode->next = NULL;
-        pthread_mutex_lock(&plist->q_lock);
-        if(isTaskListEmpty(plist)) {
-            plist->front = pnode;
-        } else {
-            plist->rear->next = pnode;
-        }
-        plist->rear = pnode;
-        plist->size++;
-        pthread_cond_signal(&plist->cond);
-        pthread_mutex_unlock(&plist->q_lock);
-    }
-    return;
-}
-
-/*元素出队*/
-void deTaskList(taskList *plist, taskNode *taskNode){
-    pthread_mutex_lock(&plist->q_lock);
-    if(!isTaskListEmpty(plist)) {
-        taskNode->pre->next = taskNode->next;
-        taskNode->next->pre = taskNode->pre;
-        if(plist->front == taskNode){
-            plist->front = taskNode->next;
-        }
-        plist->size--;
-        free(taskNode);
-        if(plist->size==0){
-            plist->rear = NULL;
-        }
-    }
-    pthread_mutex_unlock(&plist->q_lock);
-    return;
-}
+taskList *gWaitList;
+taskList *gDoList;
+int maxTaskNum = 2;
+int currentTaskNum = 0;
 
 static dispatch_queue_t lineQueues[4] = {0};
 static dispatch_semaphore_t semaphores[4] = {0};
 static long task_id = 0;
+
+taskList *initTaskList(void);
+void actionTask(taskNode *node);
 
 dispatch_queue_t dispatch_pool_get_global_queue(long identifier, unsigned long flags){
     dispatch_queue_t queue = dispatch_get_global_queue(identifier, flags);
@@ -122,6 +49,8 @@ dispatch_queue_t dispatch_pool_serial_queue_create(const char *_Nullable label,l
     return queue;
 }
 
+
+
 void dispatch_pool_init(){
     lineQueues[0] = dispatch_pool_serial_queue_create("sdp.nd.serial_common_high", DISPATCH_QUEUE_PRIORITY_HIGH);
     lineQueues[1] = dispatch_pool_serial_queue_create("sdp.nd.serial_common_default", DISPATCH_QUEUE_PRIORITY_DEFAULT);
@@ -132,10 +61,10 @@ void dispatch_pool_init(){
     semaphores[2] = dispatch_semaphore_create(20);
     semaphores[3] = dispatch_semaphore_create(20);
     gMessageList = initMessageList();
-    gTaskList = initTaskList();
+    gWaitList = initTaskList();
+    gDoList = initTaskList();
     printf("init");
 }
-
 
 dispatch_semaphore_t dispatch_pool_get_line_queue_semaphore_with_qos(dispatch_qos_class_t qos){
     dispatch_semaphore_t semaphore;
@@ -253,34 +182,152 @@ void dispatch_pool_sync(dispatch_queue_t queue,dispatch_block_t block){
     }
 }
 
-void pool_async(dispatch_queue_t queue,dispatch_block_t block,struct task_node *node){
-    dispatch_async(queue,^{
-        if(block){
-            block();
-        }
-        
-    });
+
+taskList *initTaskList(){
+    taskList *plist = (taskList *)malloc(sizeof(taskList));
+    if(plist!=NULL){
+        plist->front = NULL;
+        plist->rear = NULL;
+        plist->size = 0;
+        pthread_mutex_init(&plist->q_lock, NULL);
+        pthread_cond_init(&plist->cond, NULL);
+    }
+    return plist;
 }
+
+int isTaskListEmpty(taskList *plist){
+    if(plist->front==NULL && plist->size==0){
+        return 1;
+    }else{
+        return 0;
+    }
+}
+
+int getTaskListSize(taskList *plist){
+    return plist->size;
+}
+
+taskNode *getTaskListFront(taskList *plist){
+    pthread_mutex_lock(&plist->q_lock);
+    while(isTaskListEmpty(plist)){
+        pthread_cond_wait(&plist->cond, &plist->q_lock);
+    }
+    taskNode *message = plist->front;
+    pthread_mutex_unlock(&plist->q_lock);
+    return message;//---->此处有bug，队列为空时，在锁释放后，plist->front可能被入队操作赋值，出现node等于NULL，而plist->front不等于NULL
+}
+
+void enTaskList(taskList *plist, taskNode *pnode){
+    if(pnode != NULL) {
+        pthread_mutex_lock(&plist->q_lock);
+        if(isTaskListEmpty(plist)) {
+            plist->front = pnode;
+        } else {
+            pnode->pre=plist->rear;
+            plist->rear->next = pnode;
+        }
+        plist->rear = pnode;
+        plist->size++;
+        pthread_cond_signal(&plist->cond);
+        pthread_mutex_unlock(&plist->q_lock);
+    }
+    return;
+}
+
+void deTaskList(taskList *plist, taskNode *taskNode){
+    pthread_mutex_lock(&plist->q_lock);
+    taskList *waitList = gWaitList;
+    taskList *doList = gDoList;
+    if(!isTaskListEmpty(plist)) {
+        if(taskNode->pre != NULL){
+            taskNode->pre->next = taskNode->next;
+        }else if(taskNode->next != NULL){
+            taskNode->next->pre = taskNode->pre;
+        }
+        if(gWaitList->rear == taskNode){
+            gWaitList->rear = taskNode->pre;
+        }
+        if(plist->front == taskNode){
+            plist->front = taskNode->next;
+        }
+        plist->size--;
+//        free(taskNode);
+        if(plist->size==0){
+            plist->front = NULL;
+            plist->rear = NULL;
+        }
+    }
+    pthread_cond_signal(&plist->cond);
+    pthread_mutex_unlock(&plist->q_lock);
+    return;
+}
+
+
+
+void moveListFrontToOthersRear(taskList *waitList,taskList *doList){
+    //        printf("%d:离开等待队列\n",node->task_id);
+    pthread_mutex_lock(&gWaitList->q_lock);
+    taskNode *node = gWaitList -> front;
+    gWaitList->front = gWaitList->front->next;
+    if(gWaitList->rear == node){
+        gWaitList->rear = NULL;
+    }
+    gWaitList->size--;
+    //        printf("%d:加入执行队列\n",node->task_id);
+    enTaskList(gDoList, node);
+    pthread_cond_signal(&gWaitList->cond);
+    pthread_mutex_unlock(&gWaitList->q_lock);
+}
+
+void pool_async(){
+    if(gDoList->front){
+        taskNode *node = gDoList->front;
+        printf("%d:发起异步执行\n",node->task_id);
+        dispatch_async(node->queue,^{
+            taskList *waitList = gWaitList;
+            taskList *doList = gDoList;
+            printf("%d:开始执行\n",node->task_id);
+            if(node->block){
+                            node->block();
+            }
+            printf("%d:执行结束\n",node->task_id);
+            deTaskList(gDoList, node);
+            pool_async();
+        });
+    }
+}
+
+void actionTask(taskNode *node){
+    taskList *waitList = gWaitList;
+    taskList *doList = gDoList;
+    while(gDoList->size < maxTaskNum && gWaitList->front != NULL){
+        moveListFrontToOthersRear(gWaitList,doList);
+    }
+    pool_async();
+};
+
 
 void dispatch_pool_async(dispatch_queue_t queue,dispatch_block_t block){
     if (!block) {
         return;
     }
     dispatch_qos_class_t qos = dispatch_queue_get_qos_class(queue, NULL);
-    __block long current_task_id = task_id;
-    task_id++;
-//    enList(gMessageList, &(Message){current_task_id,"","",fun_dispatch_pool_async,qos,CFAbsoluteTimeGetCurrent()});
+    int current_task_id = OSAtomicIncrement32(&task_id);
     if(is_qos_class_user_interactive(qos)){
         dispatch_async(queue, block);
     }else{
-        enTaskList(gTaskList, &(taskNode){current_task_id,pool_async,NULL});
+        taskList *waitList = gWaitList;
+        taskList *doList = gDoList;
+        taskNode *pnodeCopy = (taskNode *)malloc(sizeof(taskNode));
+        dispatch_queue_t queueCopy;
+//        memcpy(, , )
+        
+        memcpy(pnodeCopy, &(taskNode){current_task_id,queue,block,NULL,NULL}, sizeof(taskNode));
+        enTaskList(gWaitList,pnodeCopy);
+//        printf("%d:加入等待队列\n",pnodeCopy->task_id);
+        actionTask(pnodeCopy);
     }
 }
-
-void actionTask(){
-}
-
-
 
 dispatch_group_t dispatch_pool_group_create(){
     enList(gMessageList, &(Message){0,"","",fun_dispatch_pool_group_create,-1,CFAbsoluteTimeGetCurrent()});

@@ -14,7 +14,7 @@
 		A07C72991FBE9632006D79CA /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A07C72431FBE90FE006D79CA /* Main.storyboard */; };
 		A07C729A1FBE9634006D79CA /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A04BCC631FBD977200FD336C /* Info.plist */; };
 		A07C729B1FBE9636006D79CA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A04BCC5E1FBD977100FD336C /* Assets.xcassets */; };
-		A07C729C1FBE964E006D79CA /* dispatchpool.m in Sources */ = {isa = PBXBuildFile; fileRef = A04BCC4D1FBD92EC00FD336C /* dispatchpool.m */; };
+		A07C729C1FBE964E006D79CA /* dispatchpool.m in Sources */ = {isa = PBXBuildFile; fileRef = A04BCC4D1FBD92EC00FD336C /* dispatchpool.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		A07C729D1FBE9652006D79CA /* GCDSectionModel.m in Sources */ = {isa = PBXBuildFile; fileRef = A04BCC501FBD92EC00FD336C /* GCDSectionModel.m */; };
 		A07C729E1FBE9652006D79CA /* QSDispatchQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = A04BCC531FBD92EC00FD336C /* QSDispatchQueue.m */; };
 		A07C729F1FBE9652006D79CA /* DemoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A04BCC561FBD92EC00FD336C /* DemoViewController.m */; };

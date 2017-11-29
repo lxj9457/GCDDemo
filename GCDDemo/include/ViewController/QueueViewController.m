@@ -171,7 +171,7 @@
 
 - (void)actionWithTag:(int)tag info:(NSString *)info{
     for(int k = 0; k < tag; k = k + 1){
-        if(k == tag - 1 && tag%100 ==0){
+        if(k == tag - 1){
             NSLog(@"%@:%d\n",info,tag);
         }
     }
@@ -180,7 +180,7 @@
 
 - (void)sleepWithTag:(int)tag time:(double)time info:(NSString *)info{
     sleep(time);
-    if(tag%100 ==0){
+    if(tag%100){
         NSLog(@"%@:%d\n",info,tag);
     }
 }
