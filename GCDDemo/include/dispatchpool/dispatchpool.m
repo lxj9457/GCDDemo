@@ -9,6 +9,104 @@
 #import "dispatchpool.h"
 #import "GPQActionAnalysis.h"
 
+typedef struct task_node{
+    long task_id;
+    void (*fun)(dispatch_queue_t queue,dispatch_block_t block,struct task_node *node);
+    struct task_node *pre;
+    struct task_node *next;
+}taskNode;
+
+typedef struct{
+    taskNode *front;
+    taskNode *rear;
+    int size;
+    pthread_mutex_t q_lock;
+    pthread_cond_t cond;
+}taskList;
+
+taskList *gTaskList;
+
+taskList *initTaskList(){
+    taskList *plist = (taskList *)malloc(sizeof(taskList));
+    if(plist!=NULL){
+        plist->front = NULL;
+        plist->rear = NULL;
+        plist->size = 0;
+        pthread_mutex_init(&plist->q_lock, NULL);
+        pthread_cond_init(&plist->cond, NULL);
+    }
+    return plist;
+}
+
+int isTaskListEmpty(taskList *plist){
+    if(plist->front==NULL && plist->rear==NULL && plist->size==0){
+        return 1;
+    }else{
+        return 0;
+    }
+}
+
+int getTaskListSize(taskList *plist){
+    return plist->size;
+}
+
+taskNode *getTaskListFront(taskList *plist){
+    pthread_mutex_lock(&plist->q_lock);
+    while(isTaskListEmpty(plist)){
+        pthread_cond_wait(&plist->cond, &plist->q_lock);
+    }
+    taskNode *message = plist->front;
+    pthread_mutex_unlock(&plist->q_lock);
+    return message;//---->此处有bug，队列为空时，在锁释放后，plist->front可能被入队操作赋值，出现node等于NULL，而plist->front不等于NULL
+}
+
+MessageNode *getRear(MessageList *plist){
+    MessageNode *node = NULL;
+    if(!isEmpty(plist)) {
+        node = plist->rear;
+    }
+    return node;
+}
+
+/*将新元素入队*/
+void enTaskList(taskList *plist, taskNode *taskNode){
+    struct task_node *pnode = (struct task_node *)malloc(sizeof(taskNode));
+    memcpy(pnode, taskNode, sizeof(struct task_node));
+    if(pnode != NULL) {
+        pnode->next = NULL;
+        pthread_mutex_lock(&plist->q_lock);
+        if(isTaskListEmpty(plist)) {
+            plist->front = pnode;
+        } else {
+            plist->rear->next = pnode;
+        }
+        plist->rear = pnode;
+        plist->size++;
+        pthread_cond_signal(&plist->cond);
+        pthread_mutex_unlock(&plist->q_lock);
+    }
+    return;
+}
+
+/*元素出队*/
+void deTaskList(taskList *plist, taskNode *taskNode){
+    pthread_mutex_lock(&plist->q_lock);
+    if(!isTaskListEmpty(plist)) {
+        taskNode->pre->next = taskNode->next;
+        taskNode->next->pre = taskNode->pre;
+        if(plist->front == taskNode){
+            plist->front = taskNode->next;
+        }
+        plist->size--;
+        free(taskNode);
+        if(plist->size==0){
+            plist->rear = NULL;
+        }
+    }
+    pthread_mutex_unlock(&plist->q_lock);
+    return;
+}
+
 static dispatch_queue_t lineQueues[4] = {0};
 static dispatch_semaphore_t semaphores[4] = {0};
 static long task_id = 0;
@@ -34,8 +132,10 @@ void dispatch_pool_init(){
     semaphores[2] = dispatch_semaphore_create(20);
     semaphores[3] = dispatch_semaphore_create(20);
     gMessageList = initMessageList();
+    gTaskList = initTaskList();
     printf("init");
 }
+
 
 dispatch_semaphore_t dispatch_pool_get_line_queue_semaphore_with_qos(dispatch_qos_class_t qos){
     dispatch_semaphore_t semaphore;
@@ -153,6 +253,15 @@ void dispatch_pool_sync(dispatch_queue_t queue,dispatch_block_t block){
     }
 }
 
+void pool_async(dispatch_queue_t queue,dispatch_block_t block,struct task_node *node){
+    dispatch_async(queue,^{
+        if(block){
+            block();
+        }
+        
+    });
+}
+
 void dispatch_pool_async(dispatch_queue_t queue,dispatch_block_t block){
     if (!block) {
         return;
@@ -160,30 +269,18 @@ void dispatch_pool_async(dispatch_queue_t queue,dispatch_block_t block){
     dispatch_qos_class_t qos = dispatch_queue_get_qos_class(queue, NULL);
     __block long current_task_id = task_id;
     task_id++;
-    enList(gMessageList, &(Message){current_task_id,"","",fun_dispatch_pool_async,qos,CFAbsoluteTimeGetCurrent()});
+//    enList(gMessageList, &(Message){current_task_id,"","",fun_dispatch_pool_async,qos,CFAbsoluteTimeGetCurrent()});
     if(is_qos_class_user_interactive(qos)){
         dispatch_async(queue, block);
     }else{
-        dispatch_queue_t lineQueue = dispatch_pool_get_line_queue_with_qos(qos);
-        dispatch_semaphore_t semaphorse = dispatch_pool_get_line_queue_semaphore_with_qos(qos);
-        dispatch_async(lineQueue,^{
-            CFAbsoluteTime enterTime = CFAbsoluteTimeGetCurrent();
-            enList(gMessageList, &(Message){current_task_id,"","",taskStatus_EnterLineQueue,qos,enterTime});
-            dispatch_semaphore_wait(semaphorse, DISPATCH_TIME_FOREVER);
-            dispatch_async(queue,^{
-                CFAbsoluteTime startTime = CFAbsoluteTimeGetCurrent();
-                enList(gMessageList, &(Message){current_task_id,"","",taskStatus_StartTask,qos,startTime - enterTime});
-                if (block) {
-                    block();
-                }
-                dispatch_semaphore_signal(semaphorse);
-                CFAbsoluteTime endTime = CFAbsoluteTimeGetCurrent();
-                enList(gMessageList, &(Message){current_task_id,"","",taskStatus_StartTask,qos,endTime - startTime});
-            });
-        });
-        
+        enTaskList(gTaskList, &(taskNode){current_task_id,pool_async,NULL});
     }
 }
+
+void actionTask(){
+}
+
+
 
 dispatch_group_t dispatch_pool_group_create(){
     enList(gMessageList, &(Message){0,"","",fun_dispatch_pool_group_create,-1,CFAbsoluteTimeGetCurrent()});
@@ -240,17 +337,20 @@ void dispatch_pool_group_sync(dispatch_group_t group,dispatch_queue_t queue,disp
     }else{
         dispatch_queue_t lineQueue = dispatch_pool_get_line_queue_with_qos(qos);
         dispatch_semaphore_t semaphorse = dispatch_pool_get_line_queue_semaphore_with_qos(qos);
-        dispatch_sync(lineQueue,^{
-            dispatch_semaphore_wait(semaphorse, DISPATCH_TIME_FOREVER);
+//        dispatch_sync(lineQueue,^{
+//            dispatch_semaphore_wait(semaphorse, DISPATCH_TIME_FOREVER);
             dispatch_group_async(group, queue,^{
+                
                 if (block) {
                     block();
                 }
-                dispatch_semaphore_signal(semaphorse);
+//                dispatch_semaphore_signal(semaphorse);
             });
-        });
+//        });
     }
 }
+
+
 
 /*
  增加一个group任务信号量，用于替代GCD的 dispatch_group_enter 接口，便于埋点统计和后续优化
