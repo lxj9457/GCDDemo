@@ -232,12 +232,11 @@ void enTaskList(taskList *plist, taskNode *pnode){
         pthread_mutex_lock(&plist->q_lock);
         if(isTaskListEmpty(plist)) {
             plist->front = pnode;
-//            plist->current = pnode;
+            plist->current = pnode;
         } else {
             pnode->pre=plist->rear;
             plist->rear->next = pnode;
         }
-//        NSLog(@"id:%d,queue:%@,block:%@",pnode->task_id,pnode->queue,pnode->block);
         plist->rear = pnode;
         plist->size++;
         pthread_cond_signal(&plist->cond);
@@ -248,10 +247,8 @@ void enTaskList(taskList *plist, taskNode *pnode){
 
 void deTaskList(taskList *plist, taskNode *taskNode){
     pthread_mutex_lock(&plist->q_lock);
-    taskList *waitList = gWaitList;
-    taskList *doList = gDoList;
     if(!isTaskListEmpty(plist)) {
-        if(taskNode->pre != NULL){
+        if(taskNode->pre != NULL){printf("前节点指针重定向")'
             taskNode->pre->next = taskNode->next;
         }else if(taskNode->next != NULL){
             taskNode->next->pre = taskNode->pre;
@@ -263,10 +260,11 @@ void deTaskList(taskList *plist, taskNode *taskNode){
             plist->front = taskNode->next;
         }
         plist->size--;
-//        free(taskNode);
+        free(taskNode);
         if(plist->size==0){
             plist->front = NULL;
             plist->rear = NULL;
+            plist->current = NULL;
         }
     }
     pthread_cond_signal(&plist->cond);
@@ -282,7 +280,7 @@ void pool_async(taskNode *node){
 void actionTask(int flag){
     taskList *doList = gDoList;
     taskList *waitList = gWaitList;
-    while(currentTaskNum < maxTaskNum && gWaitList->front != NULL && gWaitList->current != gWaitList->rear){
+    while(currentTaskNum < maxTaskNum && gWaitList->front != NULL && gWaitList->size > 0){
         if(gWaitList->current == NULL){
             gWaitList->current = gWaitList->front;
         }
@@ -291,11 +289,11 @@ void actionTask(int flag){
             node->status = taskStatusStarted;
             currentTaskNum++;
             dispatch_async(node->queue,^{
-//                printf("%d:开始执行\n",node->task_id);
                 if(node->block){
                     node->block();
                 }
-//                printf("%d:执行结束\n",node->task_id);
+                node->status = taskStatusEnd;
+                deTaskList(gWaitList, node);
                 actionTask(2);
                 currentTaskNum--;
             });
@@ -304,6 +302,8 @@ void actionTask(int flag){
             gWaitList->current = gWaitList->current->next;
         }
     }
+//    pthread_cond_signal(&gWaitList->cond);
+//    pthread_mutex_unlock(&gWaitList->q_lock);
 };
 
 

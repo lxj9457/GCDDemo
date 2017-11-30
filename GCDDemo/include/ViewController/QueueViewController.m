@@ -139,7 +139,7 @@
             NSLog(@"%d:%@结束执行同步任务",currentId,[NSThread currentThread]);
         });
     }else if(indexPath.section == 3){
-        int num = 1000000;
+        int num = 100000;
         if(indexPath.row == 0){
             [[GPQActionAnalysis shareInstance] putoutAllLog];
         }else if(indexPath.row == 1){
@@ -148,7 +148,7 @@
                 dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
                 dispatch_pool_async(queue, ^{
                     [self actionWithTag:i info:@"dispatch_pool"];
-                    if(i==num-2){
+                    if(i==num-1){
                         double endTime = CFAbsoluteTimeGetCurrent();
                         NSLog(@"100000个任务在dispatch_pool中执行时间为:%f\n",endTime-beginTime);
                     }
@@ -160,7 +160,7 @@
                 dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
                 dispatch_async(queue, ^{
                     [self actionWithTag:i info:@"gcd"];
-                    if(i==num-2){
+                    if(i==num-1){
                         double endTime = CFAbsoluteTimeGetCurrent();
                         NSLog(@"100000个任务在gcd中执行时间为:%f\n",endTime-beginTime);
                     }
