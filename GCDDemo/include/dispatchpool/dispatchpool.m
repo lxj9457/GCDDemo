@@ -239,6 +239,7 @@ void enTaskList(taskList *plist, taskNode *pnode){
         }
         plist->rear = pnode;
         plist->size++;
+        printf("%d:加入链表",pnode->task_id);
         pthread_cond_signal(&plist->cond);
         pthread_mutex_unlock(&plist->q_lock);
     }
@@ -248,15 +249,19 @@ void enTaskList(taskList *plist, taskNode *pnode){
 void deTaskList(taskList *plist, taskNode *taskNode){
     pthread_mutex_lock(&plist->q_lock);
     if(!isTaskListEmpty(plist)) {
-        if(taskNode->pre != NULL){printf("前节点指针重定向")'
+        if(taskNode->pre != NULL){
+            printf("%d:前节点指针重定向",taskNode->task_id);
             taskNode->pre->next = taskNode->next;
         }else if(taskNode->next != NULL){
+            printf("%d:后节点指针重定向",taskNode->task_id);
             taskNode->next->pre = taskNode->pre;
         }
         if(gWaitList->rear == taskNode){
+            printf("%d:链表尾节点指针重定向",taskNode->task_id);
             gWaitList->rear = taskNode->pre;
         }
         if(plist->front == taskNode){
+            printf("%d:链表头节点指针重定向",taskNode->task_id);
             plist->front = taskNode->next;
         }
         plist->size--;
@@ -281,6 +286,7 @@ void actionTask(int flag){
     taskList *doList = gDoList;
     taskList *waitList = gWaitList;
     while(currentTaskNum < maxTaskNum && gWaitList->front != NULL && gWaitList->size > 0){
+        
         if(gWaitList->current == NULL){
             gWaitList->current = gWaitList->front;
         }
@@ -319,6 +325,7 @@ void dispatch_pool_async(dispatch_queue_t queue,dispatch_block_t block){
         taskNode *pnodeCopy = (taskNode *)malloc(sizeof(taskNode));
         memcpy(pnodeCopy, &(taskNode){current_task_id,taskStatusWaiting,queue,[block copy],NULL,NULL}, sizeof(taskNode));
         enTaskList(gWaitList,pnodeCopy);
+        
         actionTask(1);
     }
 }
