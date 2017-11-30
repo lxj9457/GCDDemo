@@ -239,7 +239,7 @@ void enTaskList(taskList *plist, taskNode *pnode){
         }
         plist->rear = pnode;
         plist->size++;
-        printf("%d:加入链表",pnode->task_id);
+//        printf("%d:加入链表\n",pnode->task_id);
         pthread_cond_signal(&plist->cond);
         pthread_mutex_unlock(&plist->q_lock);
     }
@@ -250,18 +250,18 @@ void deTaskList(taskList *plist, taskNode *taskNode){
     pthread_mutex_lock(&plist->q_lock);
     if(!isTaskListEmpty(plist)) {
         if(taskNode->pre != NULL){
-            printf("%d:前节点指针重定向",taskNode->task_id);
+            printf("%d:前节点指针重定向\n",taskNode->task_id);
             taskNode->pre->next = taskNode->next;
         }else if(taskNode->next != NULL){
-            printf("%d:后节点指针重定向",taskNode->task_id);
+            printf("%d:后节点指针重定向\n",taskNode->task_id);
             taskNode->next->pre = taskNode->pre;
         }
         if(gWaitList->rear == taskNode){
-            printf("%d:链表尾节点指针重定向",taskNode->task_id);
+            printf("%d:链表尾节点指针重定向\n",taskNode->task_id);
             gWaitList->rear = taskNode->pre;
         }
         if(plist->front == taskNode){
-            printf("%d:链表头节点指针重定向",taskNode->task_id);
+            printf("%d:链表头节点指针重定向\n",taskNode->task_id);
             plist->front = taskNode->next;
         }
         plist->size--;
@@ -272,7 +272,7 @@ void deTaskList(taskList *plist, taskNode *taskNode){
             plist->current = NULL;
         }
     }
-    pthread_cond_signal(&plist->cond);
+//    pthread_cond_signal(&plist->cond);
     pthread_mutex_unlock(&plist->q_lock);
     return;
 }
@@ -285,13 +285,18 @@ void pool_async(taskNode *node){
 void actionTask(int flag){
     taskList *doList = gDoList;
     taskList *waitList = gWaitList;
-    while(currentTaskNum < maxTaskNum && gWaitList->front != NULL && gWaitList->size > 0){
-        
+    printf("actionTask,current:%d,size:%d\n",currentTaskNum,gWaitList->size);
+    while(currentTaskNum < maxTaskNum && gWaitList->size > 0){
+        printf("while\n");
+        pthread_mutex_lock(&gWaitList->q_lock);
         if(gWaitList->current == NULL){
             gWaitList->current = gWaitList->front;
         }
         taskNode *node = gWaitList->current;
-        if(node->status == taskStatusWaiting){
+        if(gWaitList->current != gWaitList->rear){
+            gWaitList->current = gWaitList->current->next;
+        }
+        if(node!=NULL && node->status == taskStatusWaiting){
             node->status = taskStatusStarted;
             currentTaskNum++;
             dispatch_async(node->queue,^{
@@ -304,12 +309,8 @@ void actionTask(int flag){
                 currentTaskNum--;
             });
         }
-        if(gWaitList->current != gWaitList->rear){
-            gWaitList->current = gWaitList->current->next;
-        }
+        pthread_mutex_unlock(&gWaitList->q_lock);
     }
-//    pthread_cond_signal(&gWaitList->cond);
-//    pthread_mutex_unlock(&gWaitList->q_lock);
 };
 
 

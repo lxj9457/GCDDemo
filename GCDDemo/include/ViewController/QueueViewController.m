@@ -147,7 +147,8 @@
             for(int i=0; i< num; i++){
                 dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
                 dispatch_pool_async(queue, ^{
-                    [self actionWithTag:i info:@"dispatch_pool"];
+//                    [self actionWithTag:i info:"dispatch_pool"];
+                    [self sleepWithTag:i time:0.1 info:"dispatch_pool"];
                     if(i==num-1){
                         double endTime = CFAbsoluteTimeGetCurrent();
                         NSLog(@"100000个任务在dispatch_pool中执行时间为:%f\n",endTime-beginTime);
@@ -159,7 +160,8 @@
             for(int i=0; i< num; i++){
                 dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
                 dispatch_async(queue, ^{
-                    [self actionWithTag:i info:@"gcd"];
+//                    [self actionWithTag:i info:"gcd"];
+                    [self sleepWithTag:i time:0.1 info:"gcd"];
                     if(i==num-1){
                         double endTime = CFAbsoluteTimeGetCurrent();
                         NSLog(@"100000个任务在gcd中执行时间为:%f\n",endTime-beginTime);
@@ -170,19 +172,19 @@
     }
 }
 
-- (void)actionWithTag:(int)tag info:(NSString *)info{
+- (void)actionWithTag:(int)tag info:(char *)info{
     for(int k = 0; k <= tag; k = k + 1){
         if(k == tag){
-            NSLog(@"%@:%d\n",info,tag);
+            printf("%s:%d\n",info,tag);
         }
     }
 }
 
 
-- (void)sleepWithTag:(int)tag time:(double)time info:(NSString *)info{
+- (void)sleepWithTag:(int)tag time:(double)time info:(char *)info{
     sleep(time);
-    if(tag%100){
-        NSLog(@"%@:%d\n",info,tag);
+    if(tag){
+        NSLog(@"%s:%d\n",info,tag);
     }
 }
 
