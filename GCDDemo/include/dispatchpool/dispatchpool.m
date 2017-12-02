@@ -37,8 +37,9 @@ typedef struct{
 
 taskList *gWaitList;
 taskList *gDoList;
-int maxTaskNum = 2;
+int maxTaskNum = 200;
 int currentTaskNum = 0;
+BOOL isLock = NO;
 
 static dispatch_queue_t lineQueues[4] = {0};
 static dispatch_semaphore_t semaphores[4] = {0};
@@ -61,17 +62,17 @@ dispatch_queue_t dispatch_pool_serial_queue_create(const char *_Nullable label,l
 
 
 void dispatch_pool_init(){
-    lineQueues[0] = dispatch_pool_serial_queue_create("sdp.nd.serial_common_high", DISPATCH_QUEUE_PRIORITY_HIGH);
-    lineQueues[1] = dispatch_pool_serial_queue_create("sdp.nd.serial_common_default", DISPATCH_QUEUE_PRIORITY_DEFAULT);
-    lineQueues[2] = dispatch_pool_serial_queue_create("sdp.nd.serial_common_low", DISPATCH_QUEUE_PRIORITY_LOW);
-    lineQueues[3] = dispatch_pool_serial_queue_create("sdp.nd.serial_common_background", DISPATCH_QUEUE_PRIORITY_BACKGROUND);
-    semaphores[0] = dispatch_semaphore_create(20);
-    semaphores[1] = dispatch_semaphore_create(20);
-    semaphores[2] = dispatch_semaphore_create(20);
-    semaphores[3] = dispatch_semaphore_create(20);
+//    lineQueues[0] = dispatch_pool_serial_queue_create("sdp.nd.serial_common_high", DISPATCH_QUEUE_PRIORITY_HIGH);
+//    lineQueues[1] = dispatch_pool_serial_queue_create("sdp.nd.serial_common_default", DISPATCH_QUEUE_PRIORITY_DEFAULT);
+//    lineQueues[2] = dispatch_pool_serial_queue_create("sdp.nd.serial_common_low", DISPATCH_QUEUE_PRIORITY_LOW);
+//    lineQueues[3] = dispatch_pool_serial_queue_create("sdp.nd.serial_common_background", DISPATCH_QUEUE_PRIORITY_BACKGROUND);
+//    semaphores[0] = dispatch_semaphore_create(20);
+//    semaphores[1] = dispatch_semaphore_create(20);
+//    semaphores[2] = dispatch_semaphore_create(20);
+//    semaphores[3] = dispatch_semaphore_create(20);
     gMessageList = initMessageList();
     gWaitList = initTaskList();
-    gDoList = initTaskList();
+//    gDoList = initTaskList();
     printf("init");
 }
 
@@ -230,6 +231,7 @@ taskNode *getTaskListFront(taskList *plist){
 void enTaskList(taskList *plist, taskNode *pnode){
     if(pnode != NULL) {
         pthread_mutex_lock(&plist->q_lock);
+        isLock = YES;
         if(isTaskListEmpty(plist)) {
             plist->front = pnode;
             plist->current = pnode;
@@ -239,8 +241,9 @@ void enTaskList(taskList *plist, taskNode *pnode){
         }
         plist->rear = pnode;
         plist->size++;
-//        printf("%d:加入链表\n",pnode->task_id);
+        printf("%d:加入链表\n",pnode->task_id);
         pthread_cond_signal(&plist->cond);
+        isLock = NO;
         pthread_mutex_unlock(&plist->q_lock);
     }
     return;
@@ -248,23 +251,27 @@ void enTaskList(taskList *plist, taskNode *pnode){
 
 void deTaskList(taskList *plist, taskNode *taskNode){
     pthread_mutex_lock(&plist->q_lock);
+    isLock = YES;
     if(!isTaskListEmpty(plist)) {
         if(taskNode->pre != NULL){
-            printf("%d:前节点指针重定向\n",taskNode->task_id);
+//            printf("%d:前节点指针重定向\n",taskNode->task_id);
             taskNode->pre->next = taskNode->next;
         }else if(taskNode->next != NULL){
-            printf("%d:后节点指针重定向\n",taskNode->task_id);
+//            printf("%d:后节点指针重定向\n",taskNode->task_id);
             taskNode->next->pre = taskNode->pre;
         }
         if(gWaitList->rear == taskNode){
-            printf("%d:链表尾节点指针重定向\n",taskNode->task_id);
+//            printf("%d:链表尾节点指针重定向\n",taskNode->task_id);
             gWaitList->rear = taskNode->pre;
         }
         if(plist->front == taskNode){
-            printf("%d:链表头节点指针重定向\n",taskNode->task_id);
+//            printf("%d:链表头节点指针重定向\n",taskNode->task_id);
             plist->front = taskNode->next;
         }
         plist->size--;
+        
+                    printf("%d:离开链表\n",taskNode->task_id);
+        [taskNode->block release];
         free(taskNode);
         if(plist->size==0){
             plist->front = NULL;
@@ -273,22 +280,22 @@ void deTaskList(taskList *plist, taskNode *taskNode){
         }
     }
 //    pthread_cond_signal(&plist->cond);
+    
+    isLock = NO;
     pthread_mutex_unlock(&plist->q_lock);
     return;
 }
 
 
-void pool_async(taskNode *node){
-
-}
-
-void actionTask(int flag){
+void performTask(int flag){
     taskList *doList = gDoList;
     taskList *waitList = gWaitList;
-    printf("actionTask,current:%d,size:%d\n",currentTaskNum,gWaitList->size);
+    printf("actionTask,current:%d,size:%d,flag:%d\n",currentTaskNum,gWaitList->size,flag);
     while(currentTaskNum < maxTaskNum && gWaitList->size > 0){
-        printf("while\n");
+        BOOL isLock2 = isLock;
+//        printf("while\n");
         pthread_mutex_lock(&gWaitList->q_lock);
+        isLock = YES;
         if(gWaitList->current == NULL){
             gWaitList->current = gWaitList->front;
         }
@@ -296,20 +303,26 @@ void actionTask(int flag){
         if(gWaitList->current != gWaitList->rear){
             gWaitList->current = gWaitList->current->next;
         }
+        
         if(node!=NULL && node->status == taskStatusWaiting){
             node->status = taskStatusStarted;
-            currentTaskNum++;
+            OSAtomicIncrement32(&currentTaskNum);
+            isLock = NO;
             dispatch_async(node->queue,^{
                 if(node->block){
+                    printf("执行任务:%d\n",node->task_id);
                     node->block();
                 }
                 node->status = taskStatusEnd;
                 deTaskList(gWaitList, node);
-                actionTask(2);
-                currentTaskNum--;
+                performTask(2);
+                OSAtomicDecrement32(&currentTaskNum);
             });
+            pthread_mutex_unlock(&gWaitList->q_lock);
+        }else{
+            pthread_mutex_unlock(&gWaitList->q_lock);
+            continue;
         }
-        pthread_mutex_unlock(&gWaitList->q_lock);
     }
 };
 
@@ -326,8 +339,7 @@ void dispatch_pool_async(dispatch_queue_t queue,dispatch_block_t block){
         taskNode *pnodeCopy = (taskNode *)malloc(sizeof(taskNode));
         memcpy(pnodeCopy, &(taskNode){current_task_id,taskStatusWaiting,queue,[block copy],NULL,NULL}, sizeof(taskNode));
         enTaskList(gWaitList,pnodeCopy);
-        
-        actionTask(1);
+        performTask(1);
     }
 }
 
