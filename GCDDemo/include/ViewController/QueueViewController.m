@@ -141,7 +141,7 @@
     }else if(indexPath.section == 3){
         int num = 100000;
         if(indexPath.row == 0){
-            [[GPQActionAnalysis shareInstance] putoutAllLog];
+            [[GPQActionAnalysis shareInstance] putoutAllLog:taskStatus_StartTask];
         }else if(indexPath.row == 1){
             double beginTime = CFAbsoluteTimeGetCurrent();
             for(int i=0; i< num; i++){

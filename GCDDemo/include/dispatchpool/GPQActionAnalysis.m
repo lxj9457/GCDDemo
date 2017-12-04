@@ -123,18 +123,20 @@ MessageNode * deList(MessageList *plist){
 }
 
 /*遍历队列并对各数据项调用visit函数*/
-void messageListTraverse(MessageList *plist, void (*visit)(Message *message)){
+void messageListTraverse(MessageList *plist,infoType infotype, void (*visit)(Message *,infoType)){
     MessageNode *pnode = plist->front;
     int i = plist->size;
     while(i--){
-        visit(pnode->message);
+        visit(pnode->message,infotype);
         pnode = pnode->next;
     }
     
 }
 
-void printMessage(Message *message){
-    printf("{\"task_id:%ld\",\"qos\":%d,\"log\":\"%s\",\"time\":%f},\n",message->task_id, message->qos, infoWithType(message->info_type),message->time);
+void printMessage(Message *message,infoType infotype){
+    if(infotype == taskStatus_Unkown || infotype ==message->info_type){
+        printf("{\"task_id:%ld\",\"qos\":%d,\"log\":\"%s\",\"time\":%f},\n",message->task_id, message->qos, infoWithType(message->info_type),message->time);
+    }
 }
 //
 //void analysis(Message *message){
@@ -224,9 +226,9 @@ static GPQActionAnalysis *instance;
     return instance;
 }
 
-- (void)putoutAllLog{
-    void (*print)(Message *message) = printMessage;
-    messageListTraverse(gMessageList, print);
+- (void)putoutAllLog:(infoType)infotype{
+    void (*print)(Message *,infoType) = printMessage;
+    messageListTraverse(gMessageList,infotype,print);
 }
 
 - (void)putoutAnalysisData{

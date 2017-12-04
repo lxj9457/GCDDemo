@@ -80,14 +80,14 @@ MessageNode *enList(MessageList *plist, Message *message);
 MessageNode *deList(MessageList *);
 
 /*遍历队列并对各数据项调用visit函数*/
-void messageListTraverse(MessageList *plist, void (*visit)(Message *message));
+void messageListTraverse(MessageList *plist,infoType infotype, void (*visit)(Message *,infoType));
 
 
 @interface GPQActionAnalysis : NSObject
 
 + (instancetype)shareInstance;
 
-- (void)putoutAllLog;
+- (void)putoutAllLog:(infoType)infotype;
 
 @end
 

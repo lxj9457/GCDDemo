@@ -24,6 +24,8 @@ typedef struct task_node{
     dispatch_block_t block;
     struct task_node *pre;
     struct task_node *next;
+    pthread_mutex_t q_lock;
+    pthread_cond_t cond;
 }taskNode;
 
 typedef struct{
@@ -38,7 +40,7 @@ typedef struct{
 
 taskList *gWaitList;
 taskList *gDoList;
-int maxTaskNum = 20;
+int maxTaskNum = 2;
 BOOL isLock = NO;
 
 static dispatch_queue_t lineQueues[4] = {0};
@@ -231,7 +233,7 @@ taskNode *getTaskListFront(taskList *plist){
 
 void enTaskList(taskList *plist, taskNode *pnode){
     if(pnode != NULL) {
-        pthread_mutex_trylock(&plist->q_lock);
+        pthread_mutex_lock(&plist->q_lock);
         isLock = YES;
         if(isTaskListEmpty(plist)) {
             plist->front = pnode;
@@ -240,6 +242,8 @@ void enTaskList(taskList *plist, taskNode *pnode){
             pnode->pre=plist->rear;
             plist->rear->next = pnode;
         }
+        pthread_mutex_init(&pnode->q_lock, NULL);
+        pthread_cond_init(&pnode->cond, NULL);
         enList(gMessageList, &(Message){pnode->task_id,"","",taskStatus_EnterLineQueue});
         plist->rear = pnode;
         plist->size++;
@@ -253,78 +257,64 @@ void deTaskList(taskList *plist, taskNode *taskNode){
     pthread_mutex_lock(&plist->q_lock);
     if(!isTaskListEmpty(plist)) {
         if(taskNode->pre != NULL){
-            printf("%d:前节点指针重定向\n",taskNode->task_id);
             taskNode->pre->next = taskNode->next;
-        }else if(taskNode->next != NULL){
-            printf("%d:后节点指针重定向\n",taskNode->task_id);
+        }
+        if(taskNode->next != NULL){
             taskNode->next->pre = taskNode->pre;
         }
         if(gWaitList->rear == taskNode){
-            printf("%d:链表尾节点指针重定向\n",taskNode->task_id);
             gWaitList->rear = taskNode->pre;
         }
         if(plist->front == taskNode){
-            printf("%d:链表头节点指针重定向\n",taskNode->task_id);
             plist->front = taskNode->next;
         }
         plist->size--;
-        printf("%d:离开链表\n",taskNode->task_id);
-        if(taskNode->block){
-            [taskNode->block release];
-        }
-        if(taskNode!=NULL){
-            free(taskNode);
-        }
+        free(taskNode);
         if(plist->size==0){
             plist->front = NULL;
             plist->rear = NULL;
             plist->current = NULL;
         }
+        pthread_cond_signal(&plist->cond);
+        pthread_mutex_unlock(&plist->q_lock);
     }
-//    pthread_cond_signal(&plist->cond);
-    pthread_mutex_unlock(&plist->q_lock);
     return;
 }
-
 
 void performTask(int flag){
     taskList *doList = gDoList;
     taskList *waitList = gWaitList;
-//    printf("actionTask,current:%d,size:%d,flag:%d\n",gWaitList->currentTaskNum,gWaitList->size,flag);
     while(gWaitList->currentTaskNum < maxTaskNum && gWaitList->size > 0 && gWaitList->currentTaskNum < gWaitList->size){
-        
-        if(pthread_mutex_trylock(&gWaitList->q_lock) == 0){
-            if(gWaitList->current == NULL){
-                gWaitList->current = gWaitList->front;
-            }
-            taskNode *node = gWaitList->current;
-            if(gWaitList->current != gWaitList->rear){
-                gWaitList->current = gWaitList->current->next;
-            }
-            if(node!=NULL && node->status == taskStatusWaiting){
+        if(gWaitList->current == NULL){
+            gWaitList->current = gWaitList->front;
+        }
+        taskNode *node = gWaitList->current;
+        if(gWaitList->current != gWaitList->rear){
+            gWaitList->current = gWaitList->current->next;
+        }
+        if(node!=NULL && node->status == taskStatusWaiting){
+            if(pthread_mutex_trylock(&node->q_lock) == 0){
                 node->status = taskStatusStarted;
                 OSAtomicIncrement32(&gWaitList->currentTaskNum);
                 dispatch_async(node->queue,^{
+                    enList(gMessageList, &(Message){node->task_id,"","",taskStatus_StartTask});
                     if(node->block){
-                        //                    printf("执行任务:%d\n",node->task_id);
                         node->block();
                     }
                     node->status = taskStatusEnd;
-//                    deTaskList(gWaitList, node);
-                    performTask(2);
                     OSAtomicDecrement32(&gWaitList->currentTaskNum);
+                    deTaskList(gWaitList, node);
+                    performTask(2);
+                    pthread_mutex_unlock(&node->q_lock);
                 });
-                //            pthread_cond_signal(&gWaitList->cond);
-                pthread_mutex_unlock(&gWaitList->q_lock);
             }else{
-                //            pthread_cond_signal(&gWaitList->cond);
-                pthread_mutex_unlock(&gWaitList->q_lock);
-                break;
+                continue;
             }
         }else{
-            break;
+            continue;
         }
     }
+    
 }
 
 
@@ -360,7 +350,7 @@ void dispatch_pool_group_async(dispatch_group_t group,dispatch_queue_t queue,dis
     if (!block) {
         return;
     }
-        dispatch_qos_class_t qos = dispatch_queue_get_qos_class(queue, NULL);
+    dispatch_qos_class_t qos = dispatch_queue_get_qos_class(queue, NULL);
     __block long current_task_id = task_id;
     task_id++;
     enList(gMessageList, &(Message){current_task_id,"","",fun_dispatch_pool_group_async,qos,CFAbsoluteTimeGetCurrent()});
@@ -400,16 +390,16 @@ void dispatch_pool_group_sync(dispatch_group_t group,dispatch_queue_t queue,disp
     }else{
         dispatch_queue_t lineQueue = dispatch_pool_get_line_queue_with_qos(qos);
         dispatch_semaphore_t semaphorse = dispatch_pool_get_line_queue_semaphore_with_qos(qos);
-//        dispatch_sync(lineQueue,^{
-//            dispatch_semaphore_wait(semaphorse, DISPATCH_TIME_FOREVER);
-            dispatch_group_async(group, queue,^{
-                
-                if (block) {
-                    block();
-                }
-//                dispatch_semaphore_signal(semaphorse);
-            });
-//        });
+        //        dispatch_sync(lineQueue,^{
+        //            dispatch_semaphore_wait(semaphorse, DISPATCH_TIME_FOREVER);
+        dispatch_group_async(group, queue,^{
+            
+            if (block) {
+                block();
+            }
+            //                dispatch_semaphore_signal(semaphorse);
+        });
+        //        });
     }
 }
 
