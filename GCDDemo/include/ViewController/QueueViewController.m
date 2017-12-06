@@ -146,7 +146,7 @@
             double beginTime = CFAbsoluteTimeGetCurrent();
             for(int i=0; i< num; i++){
                 dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-                dispatch_pool_async(queue, ^{
+                dispatch_pool_sync(queue, ^{
                     [self actionWithTag:i info:"dispatch_pool"];
 //                    [self sleepWithTag:i time:0.1 info:"dispatch_pool"];
                     if(i==num-1){
@@ -159,7 +159,7 @@
             double beginTime = CFAbsoluteTimeGetCurrent();
             for(int i=0; i< num; i++){
                 dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
-                dispatch_async(queue, ^{
+                dispatch_sync(queue, ^{
                     [self actionWithTag:i info:"gcd"];
 //                    [self sleepWithTag:i time:0.1 info:"gcd"];
                     if(i==num-1){

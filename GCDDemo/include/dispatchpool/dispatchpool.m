@@ -17,9 +17,15 @@ enum taskStatus{
     taskStatusEnd = 4,
 };
 
+enum performType{
+    performAsync = 1,
+    performSync = 2,
+};
+
 typedef struct task_node{
     int task_id;
     enum taskStatus status;
+    enum performType perform_type;
     dispatch_queue_t queue;
     dispatch_block_t block;
     struct task_node *pre;
@@ -40,7 +46,7 @@ typedef struct{
 
 taskList *gWaitList;
 taskList *gDoList;
-int maxTaskNum = 2;
+int maxTaskNum = 20;
 BOOL isLock = NO;
 
 static dispatch_queue_t lineQueues[4] = {0};
@@ -163,38 +169,6 @@ BOOL is_qos_class_user_interactive(dispatch_qos_class_t qos){
     return false;
 }
 
-void dispatch_pool_sync(dispatch_queue_t queue,dispatch_block_t block){
-    if (!block) {
-        return;
-    }
-    dispatch_qos_class_t qos = dispatch_queue_get_qos_class(queue, NULL);
-    __block long current_task_id = task_id;
-    task_id++;
-    enList(gMessageList, &(Message){current_task_id,"","",fun_dispatch_pool_sync,qos,CFAbsoluteTimeGetCurrent()});
-    if(is_qos_class_user_interactive(qos)){
-        dispatch_sync(queue, block);
-    }else{
-        dispatch_queue_t lineQueue = dispatch_pool_get_line_queue_with_qos(qos);
-        dispatch_semaphore_t semaphorse = dispatch_pool_get_line_queue_semaphore_with_qos(qos);
-        dispatch_sync(lineQueue,^{
-            CFAbsoluteTime enterTime = CFAbsoluteTimeGetCurrent();
-            enList(gMessageList, &(Message){current_task_id,"","",taskStatus_EnterLineQueue,qos,enterTime});
-            dispatch_semaphore_wait(semaphorse, DISPATCH_TIME_FOREVER);
-            dispatch_sync(queue,^{
-                CFAbsoluteTime startTime = CFAbsoluteTimeGetCurrent();
-                enList(gMessageList, &(Message){current_task_id,"","",taskStatus_StartTask,qos,startTime - enterTime});
-                if (block) {
-                    block();
-                }
-                dispatch_semaphore_signal(semaphorse);
-                CFAbsoluteTime endTime = CFAbsoluteTimeGetCurrent();
-                enList(gMessageList, &(Message){current_task_id,"","",taskStatus_StartTask,qos,endTime - startTime});
-            });
-        });
-    }
-}
-
-
 taskList *initTaskList(){
     taskList *plist = (taskList *)malloc(sizeof(taskList));
     if(plist!=NULL){
@@ -285,28 +259,47 @@ void performTask(int flag){
     taskList *doList = gDoList;
     taskList *waitList = gWaitList;
     while(gWaitList->currentTaskNum < maxTaskNum && gWaitList->size > 0 && gWaitList->currentTaskNum < gWaitList->size){
-        if(gWaitList->current == NULL){
-            gWaitList->current = gWaitList->front;
-        }
-        taskNode *node = gWaitList->current;
-        if(gWaitList->current != gWaitList->rear){
-            gWaitList->current = gWaitList->current->next;
-        }
-        if(node!=NULL && node->status == taskStatusWaiting){
-            if(pthread_mutex_trylock(&node->q_lock) == 0){
-                node->status = taskStatusStarted;
-                OSAtomicIncrement32(&gWaitList->currentTaskNum);
-                dispatch_async(node->queue,^{
-                    enList(gMessageList, &(Message){node->task_id,"","",taskStatus_StartTask});
-                    if(node->block){
-                        node->block();
+        if(pthread_mutex_trylock(&gWaitList->q_lock)==0){
+            if(gWaitList->current == NULL){
+                gWaitList->current = gWaitList->front;
+            }
+            taskNode *node = gWaitList->current;
+            if(gWaitList->current != gWaitList->rear){
+                gWaitList->current = gWaitList->current->next;
+            }
+            pthread_mutex_unlock(&gWaitList->q_lock);
+            if(node!=NULL && node->status == taskStatusWaiting){
+                if(pthread_mutex_trylock(&node->q_lock) == 0){
+                    node->status = taskStatusStarted;
+                    OSAtomicIncrement32(&gWaitList->currentTaskNum);
+                    if(node->perform_type == performAsync){
+                        dispatch_async(node->queue,^{
+                            enList(gMessageList, &(Message){node->task_id,"","",taskStatus_StartTask});
+                            if(node->block){
+                                node->block();
+                            }
+                            node->status = taskStatusEnd;
+                            OSAtomicDecrement32(&gWaitList->currentTaskNum);
+                            deTaskList(gWaitList, node);
+                            performTask(2);
+                            pthread_mutex_unlock(&node->q_lock);
+                        });
+                    }else{
+                        dispatch_sync(node->queue,^{
+                            enList(gMessageList, &(Message){node->task_id,"","",taskStatus_StartTask});
+                            if(node->block){
+                                node->block();
+                            }
+                            node->status = taskStatusEnd;
+                            OSAtomicDecrement32(&gWaitList->currentTaskNum);
+                            deTaskList(gWaitList, node);
+                            performTask(2);
+                            pthread_mutex_unlock(&node->q_lock);
+                        });
                     }
-                    node->status = taskStatusEnd;
-                    OSAtomicDecrement32(&gWaitList->currentTaskNum);
-                    deTaskList(gWaitList, node);
-                    performTask(2);
-                    pthread_mutex_unlock(&node->q_lock);
-                });
+                }else{
+                    continue;
+                }
             }else{
                 continue;
             }
@@ -317,6 +310,22 @@ void performTask(int flag){
     
 }
 
+void dispatch_pool_sync(dispatch_queue_t queue,dispatch_block_t block){
+    if (!block) {
+        return;
+    }
+    dispatch_qos_class_t qos = dispatch_queue_get_qos_class(queue, NULL);
+    int current_task_id = OSAtomicIncrement32(&task_id);
+    if(is_qos_class_user_interactive(qos)){
+        dispatch_sync(queue, block);
+    }else{
+        taskList *waitList = gWaitList;
+        taskNode *pnodeCopy = (taskNode *)malloc(sizeof(taskNode));
+        memcpy(pnodeCopy, &(taskNode){current_task_id,taskStatusWaiting,performSync,queue,[block copy],NULL,NULL}, sizeof(taskNode));
+        enTaskList(gWaitList,pnodeCopy);
+        performTask(1);
+    }
+}
 
 void dispatch_pool_async(dispatch_queue_t queue,dispatch_block_t block){
     if (!block) {
@@ -329,7 +338,7 @@ void dispatch_pool_async(dispatch_queue_t queue,dispatch_block_t block){
     }else{
         taskList *waitList = gWaitList;
         taskNode *pnodeCopy = (taskNode *)malloc(sizeof(taskNode));
-        memcpy(pnodeCopy, &(taskNode){current_task_id,taskStatusWaiting,queue,[block copy],NULL,NULL}, sizeof(taskNode));
+        memcpy(pnodeCopy, &(taskNode){current_task_id,taskStatusWaiting,performAsync,queue,[block copy],NULL,NULL}, sizeof(taskNode));
         enTaskList(gWaitList,pnodeCopy);
         performTask(1);
     }
@@ -434,5 +443,6 @@ void dispatch_pool_group_notify(dispatch_group_t group, dispatch_queue_t queue, 
     enList(gMessageList, &(Message){0,"","",fun_dispatch_pool_group_notify,-1,CFAbsoluteTimeGetCurrent()});
     dispatch_group_notify(group, queue,block);
 }
+
 
 
