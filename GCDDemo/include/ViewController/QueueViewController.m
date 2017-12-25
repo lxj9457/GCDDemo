@@ -58,7 +58,7 @@
                              ];
     GCDSectionModel *sectionmodel3 = [[GCDSectionModel alloc]init];
     sectionmodel3.sectionTitle = @"其他操作";
-    sectionmodel3.titles = @[@"输出log",@"测试dispatch_pool性能",@"测试gcd性能"];
+    sectionmodel3.titles = @[@"导出log",@"输出log",@"测试dispatch_pool性能",@"测试gcd性能"];
     
     _sections = @[sectionmodel,sectionmodel1,sectionmodel2,sectionmodel3];
     dispatch_pool_init();
@@ -140,10 +140,13 @@
         });
     }else if(indexPath.section == 3){
         if(indexPath.row == 0){
+            [[GPQActionAnalysis shareInstance] putoutAnalysisData];
+        }
+        if(indexPath.row == 1){
             [[GPQActionAnalysis shareInstance] putoutAllLog];
-        }else if(indexPath.row == 1){
+        }else if(indexPath.row == 2){
             double beginTime = CFAbsoluteTimeGetCurrent();
-            for(int i=0; i< 100000; i++){
+            for(int i=0; i< 5000; i++){
                 dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
                 dispatch_pool_async(queue, ^{
                     [self sleepWithTag:i time:0.005 info:@"dispatch_pool"];
@@ -153,9 +156,9 @@
                     }
                 });
             }
-        }else if(indexPath.row == 2){
+        }else if(indexPath.row == 3){
             double beginTime = CFAbsoluteTimeGetCurrent();
-            for(int i=0; i< 100000; i++){
+            for(int i=0; i< 5000; i++){
                 dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
                 dispatch_async(queue, ^{
                     [self sleepWithTag:i time:0.005 info:@"gcd"];

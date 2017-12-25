@@ -136,18 +136,15 @@ void dispatch_pool_sync(dispatch_queue_t queue,dispatch_block_t block){
         dispatch_queue_t lineQueue = dispatch_pool_get_line_queue_with_qos(qos);
         dispatch_semaphore_t semaphorse = dispatch_pool_get_line_queue_semaphore_with_qos(qos);
         dispatch_sync(lineQueue,^{
-            CFAbsoluteTime enterTime = CFAbsoluteTimeGetCurrent();
-            enList(gMessageList, &(Message){current_task_id,"","",taskStatus_EnterLineQueue,qos,enterTime});
+            enList(gMessageList, &(Message){current_task_id,"","",taskStatus_EnterLineQueue,qos,CFAbsoluteTimeGetCurrent()});
             dispatch_semaphore_wait(semaphorse, DISPATCH_TIME_FOREVER);
             dispatch_sync(queue,^{
-                CFAbsoluteTime startTime = CFAbsoluteTimeGetCurrent();
-                enList(gMessageList, &(Message){current_task_id,"","",taskStatus_StartTask,qos,startTime - enterTime});
+                enList(gMessageList, &(Message){current_task_id,"","",taskStatus_StartTask,qos,CFAbsoluteTimeGetCurrent()});
                 if (block) {
                     block();
                 }
                 dispatch_semaphore_signal(semaphorse);
-                CFAbsoluteTime endTime = CFAbsoluteTimeGetCurrent();
-                enList(gMessageList, &(Message){current_task_id,"","",taskStatus_StartTask,qos,endTime - startTime});
+                enList(gMessageList, &(Message){current_task_id,"","",taskStatus_EndTask,qos,CFAbsoluteTimeGetCurrent()});
             });
         });
     }
@@ -167,18 +164,15 @@ void dispatch_pool_async(dispatch_queue_t queue,dispatch_block_t block){
         dispatch_queue_t lineQueue = dispatch_pool_get_line_queue_with_qos(qos);
         dispatch_semaphore_t semaphorse = dispatch_pool_get_line_queue_semaphore_with_qos(qos);
         dispatch_async(lineQueue,^{
-            CFAbsoluteTime enterTime = CFAbsoluteTimeGetCurrent();
-            enList(gMessageList, &(Message){current_task_id,"","",taskStatus_EnterLineQueue,qos,enterTime});
+            enList(gMessageList, &(Message){current_task_id,"","",taskStatus_EnterLineQueue,qos,CFAbsoluteTimeGetCurrent()});
             dispatch_semaphore_wait(semaphorse, DISPATCH_TIME_FOREVER);
             dispatch_async(queue,^{
-                CFAbsoluteTime startTime = CFAbsoluteTimeGetCurrent();
-                enList(gMessageList, &(Message){current_task_id,"","",taskStatus_StartTask,qos,startTime - enterTime});
+                enList(gMessageList, &(Message){current_task_id,"","",taskStatus_StartTask,qos,CFAbsoluteTimeGetCurrent()});
                 if (block) {
                     block();
                 }
                 dispatch_semaphore_signal(semaphorse);
-                CFAbsoluteTime endTime = CFAbsoluteTimeGetCurrent();
-                enList(gMessageList, &(Message){current_task_id,"","",taskStatus_StartTask,qos,endTime - startTime});
+                enList(gMessageList, &(Message){current_task_id,"","",taskStatus_EndTask,qos,CFAbsoluteTimeGetCurrent()});
             });
         });
         

@@ -134,17 +134,8 @@ void messageListTraverse(MessageList *plist, void (*visit)(Message *message)){
 }
 
 void printMessage(Message *message){
-    printf("{\"task_id:%ld\",\"qos\":%d,\"log\":\"%s\",\"time\":%f},\n",message->task_id, message->qos, infoWithType(message->info_type),message->time);
+    printf("{\"task_id\":%ld,\"qos\":%d,\"log\":\"%s\",\"time\":%f},\n",message->task_id, message->qos, infoWithType(message->info_type),message->time);
 }
-//
-//void analysis(Message *message){
-//    MessageNode *pnode = plist->front;
-//    int i = plist->size;
-//    while(i--){
-//        
-//        pnode = pnode->next;
-//    }
-//}
 
 char *infoWithType(infoType info_type){
     char *info_string;
@@ -230,7 +221,26 @@ static GPQActionAnalysis *instance;
 }
 
 - (void)putoutAnalysisData{
-    
+    NSArray *pathArr=NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *strPath=[pathArr lastObject];
+    NSString *strFinalPath=[NSString stringWithFormat:@"%@/dispatch_data.txt",strPath];
+//    NSString *strData=@"hello,baby!";
+    NSMutableString *string = [[NSMutableString alloc]initWithFormat:@"["];
+    MessageNode *current = gMessageList->front;
+    while (current != NULL) {
+        if(pthread_mutex_trylock(&gMessageList->q_lock) == 0){
+            Message *message = current->message;
+            [string appendFormat:@"{\"task_id\":%ld,\"qos\":%d,\"log\":%d,\"time\":%f},\n",message->task_id, message->qos, message->info_type, message->time];
+            current = current->next;
+            pthread_mutex_unlock(&gMessageList->q_lock);
+        }else{
+            continue;
+        }
+    }
+    [string deleteCharactersInRange:NSMakeRange(string.length-2, 2)];
+    [string appendString:@"]"];
+    [[string copy] writeToFile:strFinalPath atomically:YES];
 }
+
 
 @end

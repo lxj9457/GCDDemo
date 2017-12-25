@@ -1,0 +1,15 @@
+PODS:
+  - Masonry (0.6.4)
+  - YYDispatchQueuePool (1.0)
+
+DEPENDENCIES:
+  - Masonry (~> 0.6.2)
+  - YYDispatchQueuePool
+
+SPEC CHECKSUMS:
+  Masonry: 281802d04d787ea2973179ee8bcb50500579ede2
+  YYDispatchQueuePool: 3dfb2274bcc74207688dde8ac6f7bdd46871dd7b
+
+PODFILE CHECKSUM: a4fd06003e52f062184451d18d30723f8291a924
+
+COCOAPODS: 1.2.0

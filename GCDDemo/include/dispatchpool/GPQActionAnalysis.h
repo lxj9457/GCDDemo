@@ -22,11 +22,12 @@ typedef enum{
     fun_dispatch_pool_group_leave = 9,
     fun_dispatch_pool_group_notify = 10,
     taskStatus_EnterLineQueue = 101,
-    taskStatus_WaitSemaphore = 102,
-    taskStatus_StartTask = 103,
-    taskStatus_EndTask = 104,
-    taskStatus_LeaveLineQueue = 105,
-    taskStatus_Unkown = 106,
+    taskStatus_LeaveLineQueue = 102,
+    taskStatus_WaitSemaphore = 103,
+    taskStatus_GotSemaphore = 104,
+    taskStatus_StartTask = 105,
+    taskStatus_EndTask = 106,
+    taskStatus_Unkown = 999
 }infoType;
 
 typedef struct{
@@ -88,6 +89,8 @@ void messageListTraverse(MessageList *plist, void (*visit)(Message *message));
 + (instancetype)shareInstance;
 
 - (void)putoutAllLog;
+
+- (void)putoutAnalysisData;
 
 @end
 
