@@ -8,11 +8,10 @@
 
 #import <Foundation/Foundation.h>
 
-@interface GPQActionAnalysis : NSObject
+
+@interface EDPMessageRecorder : NSObject
 
 + (instancetype)shareInstance;
-
-- (void)putoutAllLog;
 
 - (void)putoutAnalysisData;
 

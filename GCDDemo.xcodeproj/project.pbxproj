@@ -10,18 +10,19 @@
 		0AAD98B7F90B835278525045 /* libPods-GCDDemoTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E4E201A1ACD344F7A9A678C5 /* libPods-GCDDemoTests.a */; };
 		A014999C1FA5EAAB0029436B /* GCDDemoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = A014999B1FA5EAAB0029436B /* GCDDemoTests.m */; };
 		A01499A71FA5EAAB0029436B /* GCDDemoUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = A01499A61FA5EAAB0029436B /* GCDDemoUITests.m */; };
+		A05F68211FF26ECD00EB0932 /* EDPMessageRecorder.m in Sources */ = {isa = PBXBuildFile; fileRef = A05F681D1FF26ECC00EB0932 /* EDPMessageRecorder.m */; };
+		A05F68221FF26ECD00EB0932 /* EDPMessage.c in Sources */ = {isa = PBXBuildFile; fileRef = A05F681F1FF26ECD00EB0932 /* EDPMessage.c */; };
+		A05F68251FF26EED00EB0932 /* dispatchpool.m in Sources */ = {isa = PBXBuildFile; fileRef = A05F68231FF26EED00EB0932 /* dispatchpool.m */; };
 		A07C72981FBE9630006D79CA /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A04BCC5F1FBD977200FD336C /* LaunchScreen.storyboard */; };
 		A07C72991FBE9632006D79CA /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A07C72431FBE90FE006D79CA /* Main.storyboard */; };
 		A07C729A1FBE9634006D79CA /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = A04BCC631FBD977200FD336C /* Info.plist */; };
 		A07C729B1FBE9636006D79CA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A04BCC5E1FBD977100FD336C /* Assets.xcassets */; };
-		A07C729C1FBE964E006D79CA /* dispatchpool.m in Sources */ = {isa = PBXBuildFile; fileRef = A04BCC4D1FBD92EC00FD336C /* dispatchpool.m */; };
 		A07C729D1FBE9652006D79CA /* GCDSectionModel.m in Sources */ = {isa = PBXBuildFile; fileRef = A04BCC501FBD92EC00FD336C /* GCDSectionModel.m */; };
 		A07C729E1FBE9652006D79CA /* QSDispatchQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = A04BCC531FBD92EC00FD336C /* QSDispatchQueue.m */; };
 		A07C729F1FBE9652006D79CA /* DemoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A04BCC561FBD92EC00FD336C /* DemoViewController.m */; };
 		A07C72A01FBE9652006D79CA /* QueueViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A04BCC581FBD92EC00FD336C /* QueueViewController.m */; };
 		A07C72A11FBE9699006D79CA /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A04BCC481FBD92EC00FD336C /* AppDelegate.m */; };
 		A07C72A21FBE9699006D79CA /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A04BCC491FBD92EC00FD336C /* main.m */; };
-		A0FD463F1FC3CCA500BAF15B /* GPQActionAnalysis.m in Sources */ = {isa = PBXBuildFile; fileRef = A0FD463E1FC3CCA500BAF15B /* GPQActionAnalysis.m */; };
 		BA23650A5AE19EF996299456 /* libPods-GCDDemo.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A01A11E627E6F5E16644DDBB /* libPods-GCDDemo.a */; };
 /* End PBXBuildFile section */
 
@@ -57,8 +58,6 @@
 		A04BCC471FBD92EC00FD336C /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		A04BCC481FBD92EC00FD336C /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		A04BCC491FBD92EC00FD336C /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		A04BCC4C1FBD92EC00FD336C /* dispatchpool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dispatchpool.h; sourceTree = "<group>"; };
-		A04BCC4D1FBD92EC00FD336C /* dispatchpool.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = dispatchpool.m; sourceTree = "<group>"; };
 		A04BCC4F1FBD92EC00FD336C /* GCDSectionModel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GCDSectionModel.h; sourceTree = "<group>"; };
 		A04BCC501FBD92EC00FD336C /* GCDSectionModel.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GCDSectionModel.m; sourceTree = "<group>"; };
 		A04BCC521FBD92EC00FD336C /* QSDispatchQueue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QSDispatchQueue.h; sourceTree = "<group>"; };
@@ -70,9 +69,13 @@
 		A04BCC5E1FBD977100FD336C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A04BCC601FBD977200FD336C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		A04BCC631FBD977200FD336C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A05F681D1FF26ECC00EB0932 /* EDPMessageRecorder.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = EDPMessageRecorder.m; sourceTree = "<group>"; };
+		A05F681E1FF26ECC00EB0932 /* EDPMessageRecorder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EDPMessageRecorder.h; sourceTree = "<group>"; };
+		A05F681F1FF26ECD00EB0932 /* EDPMessage.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = EDPMessage.c; sourceTree = "<group>"; };
+		A05F68201FF26ECD00EB0932 /* EDPMessage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EDPMessage.h; sourceTree = "<group>"; };
+		A05F68231FF26EED00EB0932 /* dispatchpool.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = dispatchpool.m; sourceTree = "<group>"; };
+		A05F68241FF26EED00EB0932 /* dispatchpool.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dispatchpool.h; sourceTree = "<group>"; };
 		A07C72441FBE90FE006D79CA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		A0FD463D1FC3CCA500BAF15B /* GPQActionAnalysis.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GPQActionAnalysis.h; sourceTree = "<group>"; };
-		A0FD463E1FC3CCA500BAF15B /* GPQActionAnalysis.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GPQActionAnalysis.m; sourceTree = "<group>"; };
 		C5D6511022BABD37048C2623 /* Pods-GCDDemo.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GCDDemo.debug.xcconfig"; path = "Pods/Target Support Files/Pods-GCDDemo/Pods-GCDDemo.debug.xcconfig"; sourceTree = "<group>"; };
 		E4E201A1ACD344F7A9A678C5 /* libPods-GCDDemoTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-GCDDemoTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -187,10 +190,12 @@
 		A04BCC4B1FBD92EC00FD336C /* dispatchpool */ = {
 			isa = PBXGroup;
 			children = (
-				A04BCC4C1FBD92EC00FD336C /* dispatchpool.h */,
-				A04BCC4D1FBD92EC00FD336C /* dispatchpool.m */,
-				A0FD463D1FC3CCA500BAF15B /* GPQActionAnalysis.h */,
-				A0FD463E1FC3CCA500BAF15B /* GPQActionAnalysis.m */,
+				A05F68241FF26EED00EB0932 /* dispatchpool.h */,
+				A05F68231FF26EED00EB0932 /* dispatchpool.m */,
+				A05F681F1FF26ECD00EB0932 /* EDPMessage.c */,
+				A05F68201FF26ECD00EB0932 /* EDPMessage.h */,
+				A05F681E1FF26ECC00EB0932 /* EDPMessageRecorder.h */,
+				A05F681D1FF26ECC00EB0932 /* EDPMessageRecorder.m */,
 			);
 			path = dispatchpool;
 			sourceTree = "<group>";
@@ -479,12 +484,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A05F68251FF26EED00EB0932 /* dispatchpool.m in Sources */,
 				A07C729D1FBE9652006D79CA /* GCDSectionModel.m in Sources */,
-				A0FD463F1FC3CCA500BAF15B /* GPQActionAnalysis.m in Sources */,
 				A07C72A01FBE9652006D79CA /* QueueViewController.m in Sources */,
+				A05F68221FF26ECD00EB0932 /* EDPMessage.c in Sources */,
 				A07C72A11FBE9699006D79CA /* AppDelegate.m in Sources */,
-				A07C729C1FBE964E006D79CA /* dispatchpool.m in Sources */,
 				A07C729E1FBE9652006D79CA /* QSDispatchQueue.m in Sources */,
+				A05F68211FF26ECD00EB0932 /* EDPMessageRecorder.m in Sources */,
 				A07C72A21FBE9699006D79CA /* main.m in Sources */,
 				A07C729F1FBE9652006D79CA /* DemoViewController.m in Sources */,
 			);

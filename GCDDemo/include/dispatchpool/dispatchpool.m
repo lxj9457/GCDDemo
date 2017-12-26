@@ -7,7 +7,7 @@
 //
 
 #import "dispatchpool.h"
-#import "GPQActionAnalysis.h"
+#import "EDPMessage.h"
 
 static dispatch_queue_t lineQueues[4] = {0};
 static dispatch_semaphore_t semaphores[4] = {0};
@@ -25,10 +25,10 @@ dispatch_queue_t dispatch_pool_serial_queue_create(const char *_Nullable label,l
 }
 
 void dispatch_pool_init(){
-    lineQueues[0] = dispatch_pool_serial_queue_create("sdp.nd.serial_common_high", DISPATCH_QUEUE_PRIORITY_HIGH);
-    lineQueues[1] = dispatch_pool_serial_queue_create("sdp.nd.serial_common_default", DISPATCH_QUEUE_PRIORITY_DEFAULT);
-    lineQueues[2] = dispatch_pool_serial_queue_create("sdp.nd.serial_common_low", DISPATCH_QUEUE_PRIORITY_LOW);
-    lineQueues[3] = dispatch_pool_serial_queue_create("sdp.nd.serial_common_background", DISPATCH_QUEUE_PRIORITY_BACKGROUND);
+    lineQueues[0] = dispatch_pool_serial_queue_create("sdp.nd.dispatch_pool.serial_common_high", DISPATCH_QUEUE_PRIORITY_HIGH);
+    lineQueues[1] = dispatch_pool_serial_queue_create("sdp.nd.dispatch_pool.serial_common_default", DISPATCH_QUEUE_PRIORITY_DEFAULT);
+    lineQueues[2] = dispatch_pool_serial_queue_create("sdp.nd.dispatch_pool.serial_common_low", DISPATCH_QUEUE_PRIORITY_LOW);
+    lineQueues[3] = dispatch_pool_serial_queue_create("sdp.nd.dispatch_pool.serial_common_background", DISPATCH_QUEUE_PRIORITY_BACKGROUND);
     semaphores[0] = dispatch_semaphore_create(20);
     semaphores[1] = dispatch_semaphore_create(20);
     semaphores[2] = dispatch_semaphore_create(20);
@@ -144,7 +144,7 @@ void dispatch_pool_sync(dispatch_queue_t queue,dispatch_block_t block){
                     block();
                 }
                 dispatch_semaphore_signal(semaphorse);
-                enList(gMessageList, &(Message){current_task_id,"","",taskStatus_EndTask,qos,CFAbsoluteTimeGetCurrent()});
+                enList(gMessageList, &(Message){current_task_id,"","",taskStatus_StartTask,qos,CFAbsoluteTimeGetCurrent()});
             });
         });
     }
@@ -190,29 +190,31 @@ dispatch_group_t dispatch_pool_group_create(){
  @param queue 队列
  @param block 任务block
  */
+
+//对group暂时只有信息统计，暂无对其线程进行管理
 void dispatch_pool_group_async(dispatch_group_t group,dispatch_queue_t queue,dispatch_block_t block){
     if (!block) {
         return;
     }
-        dispatch_qos_class_t qos = dispatch_queue_get_qos_class(queue, NULL);
+    dispatch_qos_class_t qos = dispatch_queue_get_qos_class(queue, NULL);
     __block long current_task_id = task_id;
     task_id++;
     enList(gMessageList, &(Message){current_task_id,"","",fun_dispatch_pool_group_async,qos,CFAbsoluteTimeGetCurrent()});
-    if(is_qos_class_user_interactive(qos)){
-        dispatch_group_async(group,queue, block);
-    }else{
-        dispatch_queue_t lineQueue = dispatch_pool_get_line_queue_with_qos(qos);
-        dispatch_semaphore_t semaphorse = dispatch_pool_get_line_queue_semaphore_with_qos(qos);
-        dispatch_async(lineQueue,^{
-            dispatch_semaphore_wait(semaphorse, DISPATCH_TIME_FOREVER);
-            dispatch_group_async(group, queue,^{
-                if (block) {
-                    block();
-                }
-                dispatch_semaphore_signal(semaphorse);
-            });
-        });
-    }
+//    if(is_qos_class_user_interactive(qos)){
+    dispatch_group_async(group,queue, block);
+//    }else{
+//        dispatch_queue_t lineQueue = dispatch_pool_get_line_queue_with_qos(qos);
+//        dispatch_semaphore_t semaphorse = dispatch_pool_get_line_queue_semaphore_with_qos(qos);
+//        dispatch_async(lineQueue,^{
+//            dispatch_semaphore_wait(semaphorse, DISPATCH_TIME_FOREVER);
+//            dispatch_group_async(group, queue,^{
+//                if (block) {
+//                    block();
+//                }
+//                dispatch_semaphore_signal(semaphorse);
+//            });
+//        });
+//    }
 }
 
 /*
@@ -221,6 +223,8 @@ void dispatch_pool_group_async(dispatch_group_t group,dispatch_queue_t queue,dis
  @param queue 队列
  @param block 任务block
  */
+
+//对group暂时只有信息统计，暂无对其线程进行管理
 void dispatch_pool_group_sync(dispatch_group_t group,dispatch_queue_t queue,dispatch_block_t block){
     if (!block) {
         return;
@@ -229,27 +233,29 @@ void dispatch_pool_group_sync(dispatch_group_t group,dispatch_queue_t queue,disp
     __block long current_task_id = task_id;
     task_id++;
     enList(gMessageList, &(Message){current_task_id,"","",fun_dispatch_pool_group_sync,qos,CFAbsoluteTimeGetCurrent()});
-    if(is_qos_class_user_interactive(qos)){
-        dispatch_group_async(group, queue, block);
-    }else{
-        dispatch_queue_t lineQueue = dispatch_pool_get_line_queue_with_qos(qos);
-        dispatch_semaphore_t semaphorse = dispatch_pool_get_line_queue_semaphore_with_qos(qos);
-        dispatch_sync(lineQueue,^{
-            dispatch_semaphore_wait(semaphorse, DISPATCH_TIME_FOREVER);
-            dispatch_group_async(group, queue,^{
-                if (block) {
-                    block();
-                }
-                dispatch_semaphore_signal(semaphorse);
-            });
-        });
-    }
+//    if(is_qos_class_user_interactive(qos)){
+    dispatch_group_async(group, queue, block);
+//    }else{
+//        dispatch_queue_t lineQueue = dispatch_pool_get_line_queue_with_qos(qos);
+//        dispatch_semaphore_t semaphorse = dispatch_pool_get_line_queue_semaphore_with_qos(qos);
+//        dispatch_sync(lineQueue,^{
+//            dispatch_semaphore_wait(semaphorse, DISPATCH_TIME_FOREVER);
+//            dispatch_group_async(group, queue,^{
+//                if (block) {
+//                    block();
+//                }
+//                dispatch_semaphore_signal(semaphorse);
+//            });
+//        });
+//    }
 }
 
 /*
  增加一个group任务信号量，用于替代GCD的 dispatch_group_enter 接口，便于埋点统计和后续优化
  @param group 组
  */
+
+//对group暂时只有信息统计，暂无对其线程进行管理
 void dispatch_pool_group_enter(dispatch_group_t group){
     __block long current_task_id = task_id;
     task_id++;
@@ -257,23 +263,15 @@ void dispatch_pool_group_enter(dispatch_group_t group){
     dispatch_group_enter(group);
 }
 
+
 /*
  减少一个group任务信号量，用于替代GCD的 dispatch_group_leave 接口，便于埋点统计和后续优化
  @param group 组
  */
+//对group暂时只有信息统计，暂无对其线程进行管理
 void dispatch_pool_group_leave(dispatch_group_t group){
     __block long current_task_id = task_id;
     task_id++;
     enList(gMessageList, &(Message){current_task_id,"","",fun_dispatch_pool_group_leave,-1,CFAbsoluteTimeGetCurrent()});
     dispatch_group_leave(group);
 }
-
-/*
- 在group任务完成后回调，用于替代GCD的 dispatch_group_notify 接口，便于埋点统计和后续优化
- */
-void dispatch_pool_group_notify(dispatch_group_t group, dispatch_queue_t queue, dispatch_block_t block){
-    enList(gMessageList, &(Message){0,"","",fun_dispatch_pool_group_notify,-1,CFAbsoluteTimeGetCurrent()});
-    dispatch_group_notify(group, queue,block);
-}
-
-

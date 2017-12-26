@@ -9,7 +9,7 @@
 #import "QueueViewController.h"
 #import "GCDSectionModel.h"
 #import "dispatchpool.h"
-#import "GPQActionAnalysis.h"
+#import "EDPMessageRecorder.h"
 #import <Masonry/Masonry.h>
 
 @interface QueueViewController ()<UITableViewDelegate,UITableViewDataSource>
@@ -140,10 +140,10 @@
         });
     }else if(indexPath.section == 3){
         if(indexPath.row == 0){
-            [[GPQActionAnalysis shareInstance] putoutAnalysisData];
+            [[EDPMessageRecorder shareInstance] putoutAnalysisData];
         }
         if(indexPath.row == 1){
-            [[GPQActionAnalysis shareInstance] putoutAllLog];
+//            [[EDPMessageRecorder shareInstance] putoutAllLog];
         }else if(indexPath.row == 2){
             double beginTime = CFAbsoluteTimeGetCurrent();
             for(int i=0; i< 5000; i++){
